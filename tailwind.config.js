@@ -5,7 +5,7 @@ module.exports = {
         './app/**/*.{js,ts,jsx,tsx}',
         './src/**/*.{js,ts,jsx,tsx}',
     ],
-    darkMode: 'class', // or 'media' for system preference
+    darkMode: 'class',
     theme: {
         extend: {
             keyframes: {
