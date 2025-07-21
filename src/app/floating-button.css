@@ -1,0 +1,187 @@
+/* src/app/floating-button.css */
+
+/* Animaciones para el botón flotante */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+/* Estilos base para el botón flotante */
+.floating-button {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 1000;
+}
+
+.floating-button-main {
+  width: 3.5rem;
+  height: 3.5rem;
+  background-color: #f97316;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: none;
+}
+
+.floating-button-main:hover {
+  background-color: #ea580c;
+  transform: scale(1.1);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.floating-button-main.active {
+  transform: rotate(45deg);
+}
+
+/* Opciones de contacto */
+.contact-options {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.contact-options.open {
+  animation: slideUp 0.3s ease-out;
+}
+
+.contact-options.closed {
+  animation: slideDown 0.3s ease-out;
+}
+
+.contact-option {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.contact-option-label {
+  padding: 0.5rem 0.75rem;
+  background-color: white;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.contact-option-button {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-decoration: none;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+}
+
+.contact-option-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+/* Colores específicos para cada opción */
+.whatsapp {
+  background-color: #10b981;
+}
+
+.whatsapp:hover {
+  background-color: #059669;
+}
+
+.phone {
+  background-color: #3b82f6;
+}
+
+.phone:hover {
+  background-color: #2563eb;
+}
+
+.email {
+  background-color: #ef4444;
+}
+
+.email:hover {
+  background-color: #dc2626;
+}
+
+.contact {
+  background-color: #8b5cf6;
+}
+
+.contact:hover {
+  background-color: #7c3aed;
+}
+
+/* Overlay */
+.floating-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.2);
+  z-index: 999;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .floating-button {
+    bottom: 1rem;
+    right: 1rem;
+  }
+  
+  .contact-option-label {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem;
+  }
+  
+  .contact-option-button {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  
+  .floating-button-main {
+    width: 3.25rem;
+    height: 3.25rem;
+  }
+}

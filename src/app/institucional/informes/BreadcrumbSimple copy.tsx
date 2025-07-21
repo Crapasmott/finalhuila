@@ -3,13 +3,52 @@
 import React from 'react';
 import Link from 'next/link';
 
-export default function BreadcrumbSimple({ items, variant = 'default', showHome = true }) {
+// Interfaces TypeScript
+interface BreadcrumbItem {
+    label: string;
+    path: string;
+    icon?: string;
+}
+
+interface BreadcrumbSimpleProps {
+    items: BreadcrumbItem[];
+    variant?: 'default' | 'minimal' | 'card';
+    showHome?: boolean;
+}
+
+interface PageBreadcrumbProps {
+    items: BreadcrumbItem[];
+    title?: string;
+    subtitle?: string;
+}
+
+interface IconBreadcrumbProps {
+    items: (BreadcrumbItem & { icon?: string })[];
+    icons?: Record<string, React.ReactNode>;
+}
+
+// Tipos para las variantes
+type VariantStyles = {
+    container: string;
+    nav: string;
+    list: string;
+    item: string;
+    link: string;
+    active: string;
+    separator: string;
+};
+
+export default function BreadcrumbSimple({ 
+    items, 
+    variant = 'default', 
+    showHome = true 
+}: BreadcrumbSimpleProps): React.JSX.Element {
     // Agregar "Inicio" automáticamente si showHome es true y no está presente
-    const breadcrumbItems = showHome && items[0]?.path !== '/' 
+    const breadcrumbItems: BreadcrumbItem[] = showHome && items[0]?.path !== '/' 
         ? [{ label: 'Inicio', path: '/' }, ...items]
         : items;
 
-    const variants = {
+    const variants: Record<string, VariantStyles> = {
         default: {
             container: 'bg-white border-b border-gray-200',
             nav: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4',
@@ -39,13 +78,13 @@ export default function BreadcrumbSimple({ items, variant = 'default', showHome 
         }
     };
 
-    const currentVariant = variants[variant] || variants.default;
+    const currentVariant: VariantStyles = variants[variant] || variants.default;
 
     return (
         <div className={currentVariant.container}>
             <nav aria-label="Migas de pan" className={currentVariant.nav}>
                 <ol className={currentVariant.list}>
-                    {breadcrumbItems.map((item, index) => (
+                    {breadcrumbItems.map((item: BreadcrumbItem, index: number) => (
                         <li key={`${item.path}-${index}`} className={currentVariant.item}>
                             {index === breadcrumbItems.length - 1 ? (
                                 // Último elemento (activo)
@@ -77,7 +116,11 @@ export default function BreadcrumbSimple({ items, variant = 'default', showHome 
 }
 
 // Componente especializado para headers de página
-export function PageBreadcrumb({ items, title, subtitle }) {
+export function PageBreadcrumb({ 
+    items, 
+    title, 
+    subtitle 
+}: PageBreadcrumbProps): React.JSX.Element {
     return (
         <div className="bg-white shadow-sm border-b">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -85,7 +128,7 @@ export function PageBreadcrumb({ items, title, subtitle }) {
                     {/* Breadcrumb */}
                     <nav aria-label="Migas de pan" className="mb-4">
                         <ol className="flex items-center space-x-2 text-sm">
-                            {items.map((item, index) => (
+                            {items.map((item: BreadcrumbItem, index: number) => (
                                 <li key={`${item.path}-${index}`} className="flex items-center">
                                     {index === items.length - 1 ? (
                                         <span className="text-gray-900 font-medium">
@@ -131,8 +174,11 @@ export function PageBreadcrumb({ items, title, subtitle }) {
 }
 
 // Componente con iconos para cada tipo de página
-export function IconBreadcrumb({ items, icons = {} }) {
-    const defaultIcons = {
+export function IconBreadcrumb({ 
+    items, 
+    icons = {} 
+}: IconBreadcrumbProps): React.JSX.Element {
+    const defaultIcons: Record<string, React.ReactNode> = {
         home: (
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -150,13 +196,13 @@ export function IconBreadcrumb({ items, icons = {} }) {
         )
     };
 
-    const combinedIcons = { ...defaultIcons, ...icons };
+    const combinedIcons: Record<string, React.ReactNode> = { ...defaultIcons, ...icons };
 
     return (
         <nav aria-label="Migas de pan" className="py-3">
             <ol className="flex items-center space-x-2 text-sm">
-                {items.map((item, index) => {
-                    const IconComponent = combinedIcons[item.icon] || null;
+                {items.map((item, index: number) => {
+                    const IconComponent = item.icon ? combinedIcons[item.icon] : null;
                     
                     return (
                         <li key={`${item.path}-${index}`} className="flex items-center">
@@ -188,3 +234,6 @@ export function IconBreadcrumb({ items, icons = {} }) {
         </nav>
     );
 }
+
+// Exportar tipos para usar en otros componentes
+export type { BreadcrumbItem, BreadcrumbSimpleProps, PageBreadcrumbProps, IconBreadcrumbProps };

@@ -2,13 +2,24 @@
 
 import { useState } from 'react';
 
-export default function CapacitacionesGruposInteres() {
-  const temas = [
+export default function CapacitacionesGruposInteres(): React.JSX.Element {
+  const temas: string[] = [
     'Riesgo eléctrico',
     'Uso eficiente de energía', 
     'Medio ambiente',
     'Ética y cumplimiento'
   ];
+
+  // Función para manejar errores de carga de imagen
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>): void => {
+    const imgElement = e.target as HTMLImageElement;
+    const fallbackElement = imgElement.nextElementSibling as HTMLElement;
+    
+    if (imgElement && fallbackElement) {
+      imgElement.style.display = 'none';
+      fallbackElement.style.display = 'flex';
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -43,11 +54,7 @@ export default function CapacitacionesGruposInteres() {
                   src="/images/capacitaciones-estudiantes.jpg"
                   alt="Estudiantes en capacitación"
                   className="w-full h-full object-cover"
-                  onError={(e) => {
-                    // Fallback si la imagen no carga
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
+                  onError={handleImageError}
                 />
                 {/* Fallback content */}
                 <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white text-6xl font-bold" style={{display: 'none'}}>
@@ -70,7 +77,7 @@ export default function CapacitacionesGruposInteres() {
 
             {/* Lista de temas */}
             <ul className="space-y-4">
-              {temas.map((tema, index) => (
+              {temas.map((tema: string, index: number) => (
                 <li key={index} className="flex items-center space-x-3">
                   <div className="flex-shrink-0">
                     <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
@@ -83,14 +90,12 @@ export default function CapacitacionesGruposInteres() {
                 </li>
               ))}
             </ul>
-
-
           </div>
         </div>
 
         {/* Sección adicional de información */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {temas.map((tema, index) => (
+          {temas.map((tema: string, index: number) => (
             <div key={index} className="bg-white rounded-lg shadow-sm p-6 text-center hover:shadow-md transition-shadow">
               <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">

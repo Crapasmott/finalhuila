@@ -3,34 +3,95 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, FileText, Download, Calendar, Building, User, MapPin, X, ChevronDown, ChevronUp } from 'lucide-react';
 
-const ContratacionesElectrohuila = () => {
-  const [contrataciones, setContrataciones] = useState([]);
-  const [estados, setEstados] = useState([]);
-  const [filtros, setFiltros] = useState({
+// Interfaces TypeScript COMPLETAS
+interface Documento {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  url: string;
+  fecha_carga: string;
+}
+
+interface Fase {
+  fase: string;
+  fecha_inicio: string;
+  fecha_fin: string;
+  estado: 'completado' | 'activo' | 'pendiente';
+}
+
+interface Contratacion {
+  id: string;
+  codigo: string;
+  objeto: string;
+  estado: 'ABIERTA' | 'CERRADA' | 'DESIERTA' | 'ANULADA';
+  fecha_apertura: string;
+  fecha_cierre?: string;
+  tabla_origen: string;
+  empresa: string;
+  responsable: string;
+  etapa: string;
+  documentos?: Documento[];
+  cronograma?: Fase[];
+}
+
+interface Estado {
+  valor: string;
+  nombre: string;
+}
+
+interface Filtros {
+  estado: string;
+  buscar: string;
+  pagina: number;
+  registrosPorPagina: number;
+}
+
+interface APIResponse {
+  success: boolean;
+  contrataciones?: Contratacion[];
+  estados?: Estado[];
+  contratacion?: Contratacion;
+  total?: number;
+  pagina?: number;
+  message?: string;
+}
+
+interface DocumentoItemProps {
+  documento: Documento;
+}
+
+interface FaseItemProps {
+  fase: Fase;
+}
+
+const ContratacionesElectrohuila: React.FC = () => {
+  const [contrataciones, setContrataciones] = useState<Contratacion[]>([]);
+  const [estados, setEstados] = useState<Estado[]>([]);
+  const [filtros, setFiltros] = useState<Filtros>({
     estado: 'ABIERTA', // 🔧 FILTRO CORRECTO: Solo contratos ABIERTOS por defecto
     buscar: '',
     pagina: 1,
     registrosPorPagina: 3 // 🔧 SOLUCIONADO: Cambiado de 10 a 3 para coincidir con WordPress
   });
-  const [cargando, setCargando] = useState(false);
-  const [totalRegistros, setTotalRegistros] = useState(0);
-  const [totalPaginas, setTotalPaginas] = useState(1); // ✅ AGREGADO: Para paginación completa
-  const [modalDetalle, setModalDetalle] = useState(null);
-  const [contratacionDetalle, setContratacionDetalle] = useState(null);
-  const [cargandoDetalle, setCargandoDetalle] = useState(false);
+  const [cargando, setCargando] = useState<boolean>(false);
+  const [totalRegistros, setTotalRegistros] = useState<number>(0);
+  const [totalPaginas, setTotalPaginas] = useState<number>(1); // ✅ AGREGADO: Para paginación completa
+  const [modalDetalle, setModalDetalle] = useState<string | null>(null);
+  const [contratacionDetalle, setContratacionDetalle] = useState<Contratacion | null>(null);
+  const [cargandoDetalle, setCargandoDetalle] = useState<boolean>(false);
 
-  const API_BASE = 'https://electrohuila.com.co/contratacion/wp-json/electrohuila/v1';
+  const API_BASE = 'https://electrohuila.net/contratacion/wp-json/electrohuila/v1';
 
   // Cargar estados disponibles
   useEffect(() => {
-    const cargarEstados = async () => {
+    const cargarEstados = async (): Promise<void> => {
       try {
         console.log('=== CARGANDO ESTADOS ===');
         const response = await fetch(`${API_BASE}/contrataciones/estados`);
-        const data = await response.json();
+        const data: APIResponse = await response.json();
         console.log('Estados recibidos:', data);
         
-        if (data.success) {
+        if (data.success && data.estados) {
           setEstados(data.estados);
           console.log('✅ Estados cargados:', data.estados);
         } else {
@@ -44,7 +105,7 @@ const ContratacionesElectrohuila = () => {
   }, []);
 
   // Cargar contrataciones
-  const cargarContrataciones = async () => {
+  const cargarContrataciones = async (): Promise<void> => {
     setCargando(true);
     try {
       const params = new URLSearchParams({
@@ -61,7 +122,7 @@ const ContratacionesElectrohuila = () => {
       console.log('Filtros actuales:', filtros);
       
       const response = await fetch(url);
-      const data = await response.json();
+      const data: APIResponse = await response.json();
       
       console.log('Respuesta completa:', data);
       console.log('Página solicitada:', filtros.pagina);
@@ -69,14 +130,14 @@ const ContratacionesElectrohuila = () => {
       console.log('Total registros:', data.total);
       console.log('Registros en esta página:', data.contrataciones?.length);
       
-      if (data.success) {
-        let contratacionesFiltradas = data.contrataciones || [];
+      if (data.success && data.contrataciones) {
+        let contratacionesFiltradas = data.contrataciones;
         
         // 🔧 FILTRO ADICIONAL EN FRONTEND: Asegurar que solo aparezcan los contratos correctos
         if (filtros.estado === 'ABIERTA') {
           console.log('🔧 Aplicando filtro adicional para ABIERTA...');
           contratacionesFiltradas = contratacionesFiltradas
-            .filter(contrato => {
+            .filter((contrato: Contratacion) => {
               // Solo contratos con estado ABIERTA y códigos SD de 2025
               const esAbierta = contrato.estado === 'ABIERTA';
               const esCodigoSD = contrato.codigo && contrato.codigo.includes('EHUI-SD-');
@@ -97,15 +158,17 @@ const ContratacionesElectrohuila = () => {
         }
         
         console.log('✅ Contratos después del filtro frontend:', contratacionesFiltradas.length);
-        console.log('📋 Contratos finales:', contratacionesFiltradas.map(c => c.codigo));
+        console.log('📋 Contratos finales:', contratacionesFiltradas.map((c: Contratacion) => c.codigo));
         
         setContrataciones(contratacionesFiltradas);
         console.log('✅ Datos cargados correctamente');
       } else {
         console.error('❌ Error en respuesta API:', data);
+        setContrataciones([]);
       }
     } catch (error) {
       console.error('❌ Error de red:', error);
+      setContrataciones([]);
     } finally {
       setCargando(false);
     }
@@ -118,7 +181,7 @@ const ContratacionesElectrohuila = () => {
   }, [filtros]);
 
   // Cargar detalle de contratación
-  const cargarDetalle = async (id) => {
+  const cargarDetalle = async (id: string): Promise<void> => {
     setCargandoDetalle(true);
     setModalDetalle(id);
     setContratacionDetalle(null);
@@ -126,11 +189,11 @@ const ContratacionesElectrohuila = () => {
     try {
       console.log('Cargando detalle ID:', id);
       const response = await fetch(`${API_BASE}/contratacion/${id}`);
-      const data = await response.json();
+      const data: APIResponse = await response.json();
       
       console.log('Detalle cargado:', data);
       
-      if (data.success) {
+      if (data.success && data.contratacion) {
         setContratacionDetalle(data.contratacion);
       } else {
         console.error('Error cargando detalle:', data);
@@ -144,29 +207,29 @@ const ContratacionesElectrohuila = () => {
     }
   };
 
-  const cerrarModal = () => {
+  const cerrarModal = (): void => {
     setModalDetalle(null);
     setContratacionDetalle(null);
   };
 
-  const handleFiltroChange = (campo, valor) => {
+  const handleFiltroChange = (campo: keyof Filtros, valor: string | number): void => {
     console.log('=== CAMBIO DE FILTRO ===');
     console.log(`Campo: ${campo}`);
     console.log(`Valor anterior:`, filtros[campo]);
     console.log(`Valor nuevo:`, valor);
     
-    const nuevosFiltros = {
+    const nuevosFiltros: Filtros = {
       ...filtros,
       [campo]: valor,
-      pagina: campo === 'pagina' ? valor : 1
+      pagina: campo === 'pagina' ? (valor as number) : 1
     };
     
     console.log('Filtros actualizados:', nuevosFiltros);
     setFiltros(nuevosFiltros);
   };
 
-  const getEstadoColor = (estado) => {
-    const colores = {
+  const getEstadoColor = (estado: string): string => {
+    const colores: Record<string, string> = {
       'ABIERTA': 'bg-green-100 text-green-800 border-green-200',
       'CERRADA': 'bg-gray-100 text-gray-800 border-gray-200',
       'DESIERTA': 'bg-yellow-100 text-yellow-800 border-yellow-200',
@@ -175,7 +238,7 @@ const ContratacionesElectrohuila = () => {
     return colores[estado] || 'bg-blue-100 text-blue-800 border-blue-200';
   };
 
-  const formatearFecha = (fecha) => {
+  const formatearFecha = (fecha: string): string => {
     return new Date(fecha).toLocaleDateString('es-CO', {
       year: 'numeric',
       month: 'long',
@@ -183,9 +246,9 @@ const ContratacionesElectrohuila = () => {
     });
   };
 
-  // ✅ CAMBIO 3: Función para generar números de página (como la imagen original)
-  const generarNumerosPagina = () => {
-    const numeros = [];
+  // ✅ CAMBIO 3: Función para generar números de página (como la imagen original) - CORREGIDA
+  const generarNumerosPagina = (): (number | string)[] => {
+    const numeros: (number | string)[] = [];
     const maxVisible = 5;
     
     if (totalPaginas <= maxVisible) {
@@ -219,7 +282,7 @@ const ContratacionesElectrohuila = () => {
     return numeros;
   };
 
-  const DocumentoItem = ({ documento }) => (
+  const DocumentoItem: React.FC<DocumentoItemProps> = ({ documento }) => (
     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
       <div className="flex items-center space-x-3">
         <FileText className="h-5 w-5 text-red-500" />
@@ -261,7 +324,7 @@ const ContratacionesElectrohuila = () => {
     </div>
   );
 
-  const FaseItem = ({ fase }) => (
+  const FaseItem: React.FC<FaseItemProps> = ({ fase }) => (
     <div className="flex items-center space-x-4 p-3 border rounded-lg">
       <div className={`w-4 h-4 rounded-full ${
         fase.estado === 'completado' ? 'bg-green-500' : 
@@ -338,7 +401,7 @@ const ContratacionesElectrohuila = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 {estados.length > 0 ? (
-                  estados.map((estado) => (
+                  estados.map((estado: Estado) => (
                     <option key={estado.valor} value={estado.valor}>
                       {estado.nombre}
                     </option>
@@ -403,7 +466,7 @@ const ContratacionesElectrohuila = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {contrataciones.map((contrato, index) => (
+                  {contrataciones.map((contrato: Contratacion, index: number) => (
                     <tr key={`${contrato.id}-${index}`} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{contrato.codigo}</div>
@@ -467,10 +530,10 @@ const ContratacionesElectrohuila = () => {
                   </button>
                   
                   {/* Números de página individuales */}
-                  {generarNumerosPagina().map((numero, index) => (
+                  {generarNumerosPagina().map((numero: number | string, index: number) => (
                     <button
                       key={index}
-                      onClick={() => numero !== '...' && handleFiltroChange('pagina', numero)}
+                      onClick={() => typeof numero === 'number' && handleFiltroChange('pagina', numero)}
                       disabled={numero === '...'}
                       className={`px-3 py-1 rounded text-sm ${
                         numero === filtros.pagina
@@ -598,7 +661,7 @@ const ContratacionesElectrohuila = () => {
                     </h3>
                     {contratacionDetalle.documentos && contratacionDetalle.documentos.length > 0 ? (
                       <div className="grid gap-3">
-                        {contratacionDetalle.documentos.map((documento) => (
+                        {contratacionDetalle.documentos.map((documento: Documento) => (
                           <DocumentoItem key={documento.id} documento={documento} />
                         ))}
                       </div>
@@ -616,7 +679,7 @@ const ContratacionesElectrohuila = () => {
                         Cronograma
                       </h3>
                       <div className="space-y-3">
-                        {contratacionDetalle.cronograma.map((fase, index) => (
+                        {contratacionDetalle.cronograma.map((fase: Fase, index: number) => (
                           <FaseItem key={index} fase={fase} />
                         ))}
                       </div>

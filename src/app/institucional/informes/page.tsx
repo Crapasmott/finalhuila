@@ -3,16 +3,51 @@
 import { useState, useEffect } from 'react';
 import { FileText, Download, Calendar, ExternalLink, RefreshCw, AlertTriangle, BarChart3 } from 'lucide-react';
 
-export default function InformesPage() {
-  const [activeTab, setActiveTab] = useState('reporte');
-  const [expandedSections, setExpandedSections] = useState({});
-  const [documents, setDocuments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [stats, setStats] = useState({ total: 0, reporte: 0, plan: 0, informes: 0 });
+// Interfaces TypeScript
+interface Document {
+  id: number;
+  title: string;
+  url: string;
+  categoria: string;
+  seccionKey: string;
+  year: number;
+  size: string;
+  date: string;
+}
+
+interface SectionConfig {
+  key: string;
+  title: string;
+  keywords: string[];
+}
+
+interface SectionWithDocs extends SectionConfig {
+  documents: Document[];
+}
+
+interface Stats {
+  total: number;
+  reporte: number;
+  plan: number;
+  informes: number;
+}
+
+interface ExpandedSections {
+  [key: string]: boolean;
+}
+
+type TabKey = 'reporte' | 'plan' | 'informes';
+
+export default function InformesPage(): React.JSX.Element {
+  const [activeTab, setActiveTab] = useState<TabKey>('reporte');
+  const [expandedSections, setExpandedSections] = useState<ExpandedSections>({});
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [stats, setStats] = useState<Stats>({ total: 0, reporte: 0, plan: 0, informes: 0 });
 
   // Configuración de secciones exacta como WordPress
-  const sectionConfig = {
+  const sectionConfig: Record<TabKey, SectionConfig[]> = {
     reporte: [
       { key: 'empalme', title: 'Informe de Empalme', keywords: ['empalme', 'gestion'] },
       { key: 'integrado-2024', title: 'Reporte Integrado 2024', keywords: ['reporte', 'integrado', '2024'] },
@@ -53,7 +88,7 @@ export default function InformesPage() {
   };
 
   // Datos de respaldo con URLs EXACTAS del HTML de WordPress
-  const fallbackData = [
+  const fallbackData: Document[] = [
     // REPORTES INTEGRADOS
     { id: 1001, title: "Informe de Empalme 2022", url: "https://electrohuila.net/wp-content/uploads/2023/07/INFORME-DE-GESTION-2021-2022.pdf", categoria: "reporte", seccionKey: "empalme", year: 2022, size: "2.5 MB", date: "2023-07-01" },
     { id: 1002, title: "Reporte Integrado 2023", url: "https://electrohuila.net/wp-content/uploads/2023/07/Reporte-integrado-EH-2023.pdf", categoria: "reporte", seccionKey: "integrado-2023", year: 2023, size: "3.1 MB", date: "2023-07-01" },
@@ -95,7 +130,7 @@ export default function InformesPage() {
   ];
 
   // Función para cargar documentos
-  const loadDocuments = async () => {
+  const loadDocuments = async (): Promise<void> => {
     setLoading(true);
     setError(null);
     
@@ -112,7 +147,7 @@ export default function InformesPage() {
 
   // Calcular estadísticas
   useEffect(() => {
-    const newStats = {
+    const newStats: Stats = {
       total: documents.length,
       reporte: documents.filter(doc => doc.categoria === 'reporte').length,
       plan: documents.filter(doc => doc.categoria === 'plan').length,
@@ -129,7 +164,7 @@ export default function InformesPage() {
   // Inicializar secciones expandidas por defecto
   useEffect(() => {
     if (activeTab && sectionConfig[activeTab]) {
-      const defaultExpanded = {};
+      const defaultExpanded: ExpandedSections = {};
       if (sectionConfig[activeTab].length > 0) {
         defaultExpanded[sectionConfig[activeTab][0].key] = true;
       }
@@ -138,7 +173,7 @@ export default function InformesPage() {
   }, [activeTab]);
 
   // Función para alternar secciones
-  const toggleSection = (sectionKey) => {
+  const toggleSection = (sectionKey: string): void => {
     setExpandedSections(prev => ({
       ...prev,
       [sectionKey]: !prev[sectionKey]
@@ -146,7 +181,7 @@ export default function InformesPage() {
   };
 
   // Organizar documentos por sección
-  const organizeDocuments = () => {
+  const organizeDocuments = (): SectionWithDocs[] => {
     const filteredDocs = documents.filter(doc => doc.categoria === activeTab);
     const sections = sectionConfig[activeTab] || [];
     
@@ -160,7 +195,7 @@ export default function InformesPage() {
     });
   };
 
-  const getCategoryTitle = (category) => {
+  const getCategoryTitle = (category: TabKey): string => {
     switch(category) {
       case 'reporte': return 'Reporte Integrado';
       case 'plan': return 'Plan de Inversión';
@@ -260,9 +295,9 @@ export default function InformesPage() {
         <div className="mb-8">
           <div className="flex flex-wrap gap-2 p-1 bg-white rounded-lg shadow-sm border border-slate-200">
             {[
-              { key: 'reporte', label: 'Reportes Integrados', count: stats.reporte },
-              { key: 'plan', label: 'Plan de Inversión', count: stats.plan },
-              { key: 'informes', label: 'Informes', count: stats.informes }
+              { key: 'reporte' as TabKey, label: 'Reportes Integrados', count: stats.reporte },
+              { key: 'plan' as TabKey, label: 'Plan de Inversión', count: stats.plan },
+              { key: 'informes' as TabKey, label: 'Informes', count: stats.informes }
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -333,7 +368,7 @@ export default function InformesPage() {
                           </div>
                         ) : (
                           <div className="grid grid-cols-1 gap-4">
-                            {section.documents.map((doc) => (
+                            {section.documents.map((doc: Document) => (
                               <div 
                                 key={doc.id} 
                                 className={`bg-white rounded-lg p-4 shadow-sm border-l-4 transition-shadow hover:shadow-md ${

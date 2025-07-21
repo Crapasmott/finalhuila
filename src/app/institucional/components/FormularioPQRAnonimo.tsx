@@ -1,17 +1,524 @@
 'use client';
 
 import React, { useState } from 'react';
-import dynamic from 'next/dynamic';
 
-// Importación dinámica para resolver problemas con react-hook-form
-const FormularioPQRAnonimo = dynamic(() => import('@/components/FormularioPQRAnonimo'), {
-  ssr: false,
-});
+// Interfaces TypeScript
+interface FormData {
+  tipoSolicitud: string;
+  asunto: string;
+  descripcion: string;
+  nombre?: string;
+  email?: string;
+  telefono?: string;
+  identificacion?: string;
+  direccion?: string;
+  ciudad?: string;
+  archivo?: File;
+  aceptaTerminos: boolean;
+  deseaRespuesta: boolean;
+}
 
-const PQRAnonimoPage = () => {
-  const [activeTab, setActiveTab] = useState('formulario');
+interface FormErrors {
+  tipoSolicitud?: string;
+  asunto?: string;
+  descripcion?: string;
+  nombre?: string;
+  email?: string;
+  telefono?: string;
+  aceptaTerminos?: string;
+}
 
-  const normativas = [
+interface Normativa {
+  ley: string;
+  descripcion: string;
+  detalle: string;
+  icono: string;
+}
+
+interface TipoPQR {
+  tipo: string;
+  descripcion: string;
+  icono: string;
+  color: string;
+}
+
+// Componente de formulario integrado
+const FormularioPQRAnonimo: React.FC = () => {
+  const [formData, setFormData] = useState<FormData>({
+    tipoSolicitud: '',
+    asunto: '',
+    descripcion: '',
+    nombre: '',
+    email: '',
+    telefono: '',
+    identificacion: '',
+    direccion: '',
+    ciudad: '',
+    aceptaTerminos: false,
+    deseaRespuesta: false
+  });
+
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [codigoRadicado, setCodigoRadicado] = useState<string>('');
+
+  // Manejar cambios en los campos
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const newValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+    
+    setFormData(prev => ({
+      ...prev,
+      [name]: newValue
+    }));
+
+    // Limpiar error cuando el usuario empiece a escribir
+    if (errors[name as keyof FormErrors]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: undefined
+      }));
+    }
+  };
+
+  // Validar formulario
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    if (!formData.tipoSolicitud) {
+      newErrors.tipoSolicitud = 'Selecciona el tipo de solicitud';
+    }
+
+    if (!formData.asunto.trim()) {
+      newErrors.asunto = 'El asunto es requerido';
+    } else if (formData.asunto.length < 10) {
+      newErrors.asunto = 'El asunto debe tener al menos 10 caracteres';
+    }
+
+    if (!formData.descripcion.trim()) {
+      newErrors.descripcion = 'La descripción es requerida';
+    } else if (formData.descripcion.length < 20) {
+      newErrors.descripcion = 'La descripción debe tener al menos 20 caracteres';
+    }
+
+    if (!formData.aceptaTerminos) {
+      newErrors.aceptaTerminos = 'Debes aceptar los términos y condiciones';
+    }
+
+    // Si desea respuesta, validar datos de contacto
+    if (formData.deseaRespuesta) {
+      if (!formData.nombre?.trim()) {
+        newErrors.nombre = 'El nombre es requerido para recibir respuesta';
+      }
+
+      if (!formData.email?.trim()) {
+        newErrors.email = 'El email es requerido para recibir respuesta';
+      } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+        newErrors.email = 'Formato de email inválido';
+      }
+
+      if (!formData.telefono?.trim()) {
+        newErrors.telefono = 'El teléfono es requerido para recibir respuesta';
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Generar código de radicado
+  const generateRadicadoCode = (): string => {
+    const date = new Date();
+    const year = date.getFullYear();
+    const random = Math.floor(Math.random() * 999999).toString().padStart(6, '0');
+    return `PQR${year}${random}`;
+  };
+
+  // Enviar formulario
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+
+    try {
+      // Simular envío de formulario
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Generar código de radicado
+      const codigo = generateRadicadoCode();
+      setCodigoRadicado(codigo);
+      setSubmitStatus('success');
+
+      // Limpiar formulario
+      setFormData({
+        tipoSolicitud: '',
+        asunto: '',
+        descripcion: '',
+        nombre: '',
+        email: '',
+        telefono: '',
+        identificacion: '',
+        direccion: '',
+        ciudad: '',
+        aceptaTerminos: false,
+        deseaRespuesta: false
+      });
+
+    } catch (error) {
+      console.error('Error enviando formulario:', error);
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      {submitStatus === 'success' ? (
+        // Pantalla de éxito
+        <div className="bg-green-50 border border-green-200 rounded-2xl p-8 text-center">
+          <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h3 className="text-2xl font-bold text-green-900 mb-4">¡Solicitud Enviada Exitosamente!</h3>
+          <p className="text-green-700 mb-6">
+            Tu solicitud ha sido radicada correctamente. 
+            {codigoRadicado && (
+              <>
+                <br />
+                <strong>Código de radicado: {codigoRadicado}</strong>
+              </>
+            )}
+          </p>
+          <div className="bg-white rounded-xl p-4 mb-6">
+            <p className="text-gray-600 text-sm">
+              📋 Conserva este código para consultar el estado de tu solicitud
+              <br />
+              ⏱️ Tiempo de respuesta: hasta 15 días hábiles
+              <br />
+              📧 Si proporcionaste datos de contacto, recibirás notificaciones
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              setSubmitStatus('idle');
+              setCodigoRadicado('');
+            }}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Enviar Nueva Solicitud
+          </button>
+        </div>
+      ) : (
+        // Formulario
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Tipo de solicitud */}
+          <div className="bg-gray-50 rounded-xl p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Tipo de Solicitud *</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {['Petición', 'Queja', 'Reclamo', 'Sugerencia'].map((tipo) => (
+                <label key={tipo} className="flex items-center p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
+                  <input
+                    type="radio"
+                    name="tipoSolicitud"
+                    value={tipo}
+                    checked={formData.tipoSolicitud === tipo}
+                    onChange={handleInputChange}
+                    className="sr-only"
+                  />
+                  <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
+                    formData.tipoSolicitud === tipo 
+                      ? 'bg-blue-600 border-blue-600' 
+                      : 'border-gray-300'
+                  }`}>
+                    {formData.tipoSolicitud === tipo && (
+                      <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
+                    )}
+                  </div>
+                  <span className="font-medium text-gray-900">{tipo}</span>
+                </label>
+              ))}
+            </div>
+            {errors.tipoSolicitud && (
+              <p className="mt-2 text-sm text-red-600">{errors.tipoSolicitud}</p>
+            )}
+          </div>
+
+          {/* Asunto */}
+          <div>
+            <label htmlFor="asunto" className="block text-sm font-medium text-gray-700 mb-2">
+              Asunto *
+            </label>
+            <input
+              type="text"
+              id="asunto"
+              name="asunto"
+              value={formData.asunto}
+              onChange={handleInputChange}
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                errors.asunto ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="Describe brevemente tu solicitud"
+              maxLength={150}
+            />
+            <div className="flex justify-between items-center mt-1">
+              {errors.asunto && (
+                <p className="text-sm text-red-600">{errors.asunto}</p>
+              )}
+              <p className="text-sm text-gray-500 ml-auto">
+                {formData.asunto.length}/150
+              </p>
+            </div>
+          </div>
+
+          {/* Descripción */}
+          <div>
+            <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700 mb-2">
+              Descripción detallada *
+            </label>
+            <textarea
+              id="descripcion"
+              name="descripcion"
+              value={formData.descripcion}
+              onChange={handleInputChange}
+              rows={6}
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-vertical ${
+                errors.descripcion ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="Describe en detalle tu petición, queja, reclamo o sugerencia. Incluye fechas, números de factura o cualquier información relevante."
+              maxLength={2000}
+            />
+            <div className="flex justify-between items-center mt-1">
+              {errors.descripcion && (
+                <p className="text-sm text-red-600">{errors.descripcion}</p>
+              )}
+              <p className="text-sm text-gray-500 ml-auto">
+                {formData.descripcion.length}/2000
+              </p>
+            </div>
+          </div>
+
+          {/* Checkbox para desear respuesta */}
+          <div className="bg-blue-50 rounded-xl p-6">
+            <label className="flex items-start space-x-3 cursor-pointer">
+              <input
+                type="checkbox"
+                name="deseaRespuesta"
+                checked={formData.deseaRespuesta}
+                onChange={handleInputChange}
+                className="mt-1 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <div>
+                <span className="font-medium text-gray-900">Deseo recibir respuesta a mi solicitud</span>
+                <p className="text-sm text-gray-600 mt-1">
+                  Si marcas esta opción, deberás proporcionar tus datos de contacto para que podamos responderte.
+                  Si no la marcas, tu solicitud será completamente anónima.
+                </p>
+              </div>
+            </label>
+          </div>
+
+          {/* Datos de contacto (solo si desea respuesta) */}
+          {formData.deseaRespuesta && (
+            <div className="bg-gray-50 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Datos de Contacto</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-2">
+                    Nombre completo *
+                  </label>
+                  <input
+                    type="text"
+                    id="nombre"
+                    name="nombre"
+                    value={formData.nombre}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                      errors.nombre ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Tu nombre completo"
+                  />
+                  {errors.nombre && (
+                    <p className="mt-1 text-sm text-red-600">{errors.nombre}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="identificacion" className="block text-sm font-medium text-gray-700 mb-2">
+                    Identificación
+                  </label>
+                  <input
+                    type="text"
+                    id="identificacion"
+                    name="identificacion"
+                    value={formData.identificacion}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                    placeholder="Número de documento"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                      errors.email ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="tu@email.com"
+                  />
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="telefono" className="block text-sm font-medium text-gray-700 mb-2">
+                    Teléfono *
+                  </label>
+                  <input
+                    type="tel"
+                    id="telefono"
+                    name="telefono"
+                    value={formData.telefono}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                      errors.telefono ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="300 123 4567"
+                  />
+                  {errors.telefono && (
+                    <p className="mt-1 text-sm text-red-600">{errors.telefono}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="direccion" className="block text-sm font-medium text-gray-700 mb-2">
+                    Dirección
+                  </label>
+                  <input
+                    type="text"
+                    id="direccion"
+                    name="direccion"
+                    value={formData.direccion}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                    placeholder="Tu dirección"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="ciudad" className="block text-sm font-medium text-gray-700 mb-2">
+                    Ciudad
+                  </label>
+                  <select
+                    id="ciudad"
+                    name="ciudad"
+                    value={formData.ciudad}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                  >
+                    <option value="">Selecciona tu ciudad</option>
+                    <option value="neiva">Neiva</option>
+                    <option value="garzon">Garzón</option>
+                    <option value="la-plata">La Plata</option>
+                    <option value="pitalito">Pitalito</option>
+                    <option value="otra">Otra</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Términos y condiciones */}
+          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+            <label className="flex items-start space-x-3 cursor-pointer">
+              <input
+                type="checkbox"
+                name="aceptaTerminos"
+                checked={formData.aceptaTerminos}
+                onChange={handleInputChange}
+                className="mt-1 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <div>
+                <span className="font-medium text-gray-900">
+                  Acepto los términos y condiciones *
+                </span>
+                <p className="text-sm text-gray-600 mt-1">
+                  He leído y acepto las políticas de privacidad y el tratamiento de datos personales 
+                  de ElectroHuila. Entiendo que mi información será utilizada únicamente para 
+                  dar respuesta a mi solicitud.
+                </p>
+              </div>
+            </label>
+            {errors.aceptaTerminos && (
+              <p className="mt-2 text-sm text-red-600">{errors.aceptaTerminos}</p>
+            )}
+          </div>
+
+          {/* Estado de error */}
+          {submitStatus === 'error' && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+              <p className="text-red-700 font-medium">
+                ❌ Error al enviar la solicitud. Por favor, intenta nuevamente.
+              </p>
+            </div>
+          )}
+
+          {/* Botón de envío */}
+          <div className="text-center">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`px-8 py-4 rounded-xl font-semibold text-white transition-all duration-300 transform ${
+                isSubmitting
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover:scale-105 shadow-lg'
+              }`}
+            >
+              {isSubmitting ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Enviando...
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                  </svg>
+                  Enviar Solicitud
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+};
+
+// Componente principal de la página
+const PQRAnonimoPage: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<string>('formulario');
+
+  const normativas: Normativa[] = [
     {
       ley: 'Ley 1755 de 2015',
       descripcion: 'Derecho de petición',
@@ -38,7 +545,7 @@ const PQRAnonimoPage = () => {
     }
   ];
 
-  const tiposPQR = [
+  const tiposPQR: TipoPQR[] = [
     {
       tipo: 'Petición',
       descripcion: 'Solicitud de información, documentos o actuaciones',
@@ -168,11 +675,11 @@ const PQRAnonimoPage = () => {
             
             <div className="grid grid-cols-2 gap-4">
               {tiposPQR.map((item, index) => (
-                <div key={index} className={`bg-gradient-to-br from-${item.color}-50 to-${item.color}-100 rounded-xl p-4 border border-${item.color}-200`}>
+                <div key={index} className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl p-4 border border-gray-200">
                   <div className="text-center">
                     <div className="text-2xl mb-2">{item.icono}</div>
-                    <h3 className={`font-semibold text-${item.color}-800 mb-2`}>{item.tipo}</h3>
-                    <p className={`text-xs text-${item.color}-600`}>{item.descripcion}</p>
+                    <h3 className="font-semibold text-gray-800 mb-2">{item.tipo}</h3>
+                    <p className="text-xs text-gray-600">{item.descripcion}</p>
                   </div>
                 </div>
               ))}

@@ -1,17 +1,19 @@
+// src/app/layout.tsx
 import './globals.css';
 import './responsive.css';
 import { Inter } from 'next/font/google';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { ReactNode } from 'react';
-import dynamic from 'next/dynamic';
 import FloatingWhatsAppButton from '../components/FloatingWhatsAppButton';
 import ClientWrapper from '../components/ClientWrapper';
 
-
-// Importar ClientComponents de forma dinámica para evitar errores de carga en el servidor
-
 const inter = Inter({ subsets: ['latin'] });
+
+// Interfaces TypeScript
+interface RootLayoutProps {
+  children: ReactNode;
+}
 
 export const metadata = {
   metadataBase: new URL('https://electrohuila.com.co'),
@@ -32,9 +34,7 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
-  // Quitamos getServerSession - no compatible con export estático
-
+export default function RootLayout({ children }: RootLayoutProps): React.JSX.Element {
   return (
     <html lang="es">
       <body className={inter.className}>
@@ -44,10 +44,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             {children}
           </main>
           <div suppressHydrationWarning>
-            {/* @ts-ignore - Ignoramos errores de tipos en tiempo de compilación */}
-           {/* <ClientComponents /> */}
-{/* <FloatingWhatsAppButton /> */}
-<ClientWrapper />
+            <ClientWrapper />
+            <FloatingWhatsAppButton />
           </div>
           <Footer />
         </div>

@@ -1,6 +1,17 @@
 'use client';
 
-export default function AlianzasConveniosEmpresariales() {
+export default function AlianzasConveniosEmpresariales(): React.JSX.Element {
+  // Función para manejar errores de carga de imagen
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>): void => {
+    const imgElement = e.target as HTMLImageElement;
+    const fallbackElement = imgElement.nextElementSibling as HTMLElement;
+    
+    if (imgElement && fallbackElement) {
+      imgElement.style.display = 'none';
+      fallbackElement.style.display = 'flex';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -34,11 +45,7 @@ export default function AlianzasConveniosEmpresariales() {
                   src="/images/alianza-sena-electrohuila.jpg"
                   alt="Alianza ElectroHuila con SENA"
                   className="w-full h-full object-cover"
-                  onError={(e) => {
-                    // Fallback si la imagen no carga
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
+                  onError={handleImageError}
                 />
                 {/* Fallback content */}
                 <div className="absolute inset-0 bg-gradient-to-br from-orange-400 to-blue-500 flex items-center justify-center text-white text-6xl font-bold" style={{display: 'none'}}>

@@ -4,14 +4,33 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Script from 'next/script';
 
-export default function PuntosDeAtencionPage() {
-  const mapRef = useRef(null);
-  const mapInstanceRef = useRef(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
-  const [showSedes, setShowSedes] = useState(true);
+// Interfaces TypeScript
+interface Sede {
+  id: number;
+  nombre: string;
+  direccion: string;
+  telefono: string;
+  horario: string;
+  lat: number;
+  lng: number;
+}
+
+// Declaración global para Leaflet (evita errores de TypeScript)
+declare global {
+  interface Window {
+    L: any;
+  }
+  var L: any;
+}
+
+export default function PuntosDeAtencionPage(): React.JSX.Element {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const [mapLoaded, setMapLoaded] = useState<boolean>(false);
+  const [showSedes, setShowSedes] = useState<boolean>(true);
   
   // Datos de ejemplo para las sedes
-  const sedesData = [
+  const sedesData: Sede[] = [
     { 
       id: 1, 
       nombre: "Sede Principal Neiva", 
@@ -60,19 +79,19 @@ export default function PuntosDeAtencionPage() {
   ];
   
   // Inicializar el mapa cuando el script de Leaflet se carga
-  const initializeMap = () => {
-    if (!mapRef.current || mapInstanceRef.current) return;
+  const initializeMap = (): void => {
+    if (!mapRef.current || mapInstanceRef.current || !window.L) return;
     
     // Crear instancia del mapa
-    const map = L.map(mapRef.current).setView([2.9273, -75.2882], 8);
+    const map = window.L.map(mapRef.current).setView([2.9273, -75.2882], 8);
     
     // Añadir capa de OpenStreetMap
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
     
     // Añadir controles de zoom
-    L.control.zoom({
+    window.L.control.zoom({
       position: 'topleft'
     }).addTo(map);
     
@@ -84,12 +103,12 @@ export default function PuntosDeAtencionPage() {
   };
   
   // Función para añadir marcadores al mapa
-  const addMarkers = () => {
-    if (!mapInstanceRef.current) return;
+  const addMarkers = (): void => {
+    if (!mapInstanceRef.current || !window.L) return;
     
     // Limpiar marcadores existentes
-    mapInstanceRef.current.eachLayer(layer => {
-      if (layer instanceof L.Marker) {
+    mapInstanceRef.current.eachLayer((layer: any) => {
+      if (layer instanceof window.L.Marker) {
         mapInstanceRef.current.removeLayer(layer);
       }
     });
@@ -98,8 +117,8 @@ export default function PuntosDeAtencionPage() {
     if (!showSedes) return;
     
     // Añadir marcadores para cada sede
-    sedesData.forEach(sede => {
-      const marker = L.marker([sede.lat, sede.lng]).addTo(mapInstanceRef.current);
+    sedesData.forEach((sede: Sede) => {
+      const marker = window.L.marker([sede.lat, sede.lng]).addTo(mapInstanceRef.current);
       
       // Añadir popup con información
       marker.bindPopup(`
@@ -121,9 +140,29 @@ export default function PuntosDeAtencionPage() {
   }, [showSedes, mapLoaded]);
   
   // Manejar carga de script de Leaflet
-  const handleMapLoaded = () => {
+  const handleMapLoaded = (): void => {
     setMapLoaded(true);
-    initializeMap();
+    // Pequeño delay para asegurar que L esté disponible
+    setTimeout(() => {
+      initializeMap();
+    }, 100);
+  };
+
+  // Función para centrar el mapa en una sede específica
+  const centerMapOnSede = (sede: Sede): void => {
+    if (mapInstanceRef.current && window.L) {
+      mapInstanceRef.current.setView([sede.lat, sede.lng], 15);
+      setTimeout(() => {
+        mapInstanceRef.current.eachLayer((layer: any) => {
+          if (layer instanceof window.L.Marker) {
+            const markerLatLng = layer.getLatLng();
+            if (markerLatLng.lat === sede.lat && markerLatLng.lng === sede.lng) {
+              layer.openPopup();
+            }
+          }
+        });
+      }, 500);
+    }
   };
   
   return (
@@ -132,6 +171,7 @@ export default function PuntosDeAtencionPage() {
       <Script
         src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         onLoad={handleMapLoaded}
+        strategy="beforeInteractive"
       />
       <link
         rel="stylesheet"
@@ -214,6 +254,32 @@ export default function PuntosDeAtencionPage() {
               </div>
             </div>
           </div>
+
+          {/* Loading indicator */}
+          {!mapLoaded && (
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              padding: '20px',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px'
+            }}>
+              <div style={{
+                width: '20px',
+                height: '20px',
+                border: '2px solid #1797D5',
+                borderTop: '2px solid transparent',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite'
+              }}></div>
+              <span>Cargando mapa...</span>
+            </div>
+          )}
         </div>
         
         {/* Lista de sedes */}
@@ -225,7 +291,7 @@ export default function PuntosDeAtencionPage() {
             gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
             gap: '24px'
           }}>
-            {sedesData.map(sede => (
+            {sedesData.map((sede: Sede) => (
               <div 
                 key={sede.id}
                 style={{ 
@@ -341,21 +407,7 @@ export default function PuntosDeAtencionPage() {
                   </p>
                   
                   <button
-                    onClick={() => {
-                      if (mapInstanceRef.current) {
-                        mapInstanceRef.current.setView([sede.lat, sede.lng], 15);
-                        setTimeout(() => {
-                          mapInstanceRef.current.eachLayer(layer => {
-                            if (layer instanceof L.Marker) {
-                              const markerLatLng = layer.getLatLng();
-                              if (markerLatLng.lat === sede.lat && markerLatLng.lng === sede.lng) {
-                                layer.openPopup();
-                              }
-                            }
-                          });
-                        }, 500);
-                      }
-                    }}
+                    onClick={() => centerMapOnSede(sede)}
                     style={{ 
                       backgroundColor: '#1797D5',
                       color: 'white',
@@ -502,6 +554,14 @@ export default function PuntosDeAtencionPage() {
           </div>
         </div>
       </div>
+
+      {/* CSS para animación de loading */}
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }

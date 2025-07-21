@@ -3,10 +3,20 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 
-export default function EticaCumplimientoPage() {
-    const [expandedItem, setExpandedItem] = useState('soborno');
+// Interfaces TypeScript
+interface AccordionItem {
+  id: string;
+  title: string;
+  content: string;
+  icon: string;
+}
 
-    const toggleItem = (itemId) => {
+export default function EticaCumplimientoPage(): React.JSX.Element {
+    // Estados correctamente tipados
+    const [expandedItem, setExpandedItem] = useState<string | null>('soborno');
+
+    // Funciones tipadas
+    const toggleItem = (itemId: string): void => {
         if (expandedItem === itemId) {
             setExpandedItem(null);
         } else {
@@ -14,9 +24,9 @@ export default function EticaCumplimientoPage() {
         }
     };
 
-    const isExpanded = (itemId) => expandedItem === itemId;
+    const isExpanded = (itemId: string): boolean => expandedItem === itemId;
 
-    const accordionItems = [
+    const accordionItems: AccordionItem[] = [
         {
             id: 'soborno',
             title: '¿Qué es el soborno?',
@@ -437,6 +447,59 @@ export default function EticaCumplimientoPage() {
                                 )}
                             </div>
                         ))}
+                    </div>
+                </div>
+
+                {/* Call to Action final */}
+                <div className="bg-gradient-to-r from-blue-600 via-slate-600 to-blue-700 rounded-2xl p-10 text-white text-center">
+                    <div className="max-w-3xl mx-auto">
+                        <h3 className="text-3xl font-bold mb-6">¿Tienes información sobre actos de corrupción?</h3>
+                        <p className="text-blue-100 text-lg mb-8 leading-relaxed">
+                            En ElectroHuila tenemos cero tolerancia a la corrupción. Si tienes conocimiento de algún 
+                            acto irregular, repórtalo de manera segura y confidencial a través de nuestros canales oficiales.
+                        </p>
+                        
+                        <div className="grid md:grid-cols-3 gap-6 mb-8">
+                            <div className="bg-white/10 rounded-xl p-6 backdrop-blur-sm">
+                                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                    </svg>
+                                </div>
+                                <h4 className="font-semibold mb-2">Línea Directa</h4>
+                                <p className="text-blue-100 text-sm">Disponible 24/7</p>
+                            </div>
+                            
+                            <div className="bg-white/10 rounded-xl p-6 backdrop-blur-sm">
+                                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <h4 className="font-semibold mb-2">Email Seguro</h4>
+                                <p className="text-blue-100 text-sm">Comunicación encriptada</p>
+                            </div>
+                            
+                            <div className="bg-white/10 rounded-xl p-6 backdrop-blur-sm">
+                                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                    </svg>
+                                </div>
+                                <h4 className="font-semibold mb-2">Confidencial</h4>
+                                <p className="text-blue-100 text-sm">Tu identidad protegida</p>
+                            </div>
+                        </div>
+                        
+                        <a 
+                            href="/contactenos" 
+                            className="inline-flex items-center px-8 py-4 bg-white text-blue-700 rounded-xl font-semibold hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                        >
+                            <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                            Reportar de Forma Segura
+                        </a>
                     </div>
                 </div>
             </div>

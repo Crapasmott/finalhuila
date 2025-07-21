@@ -8,17 +8,33 @@ import { Search, Filter, X } from 'lucide-react';
 // Componentes de página
 import Breadcrumb from '@/components/Breadcrumb';
 
+// Interfaces TypeScript
+interface SearchItem {
+  id: string;
+  title: string;
+  description?: string;
+  content?: string;
+  type: string;
+  url: string;
+  score?: number;
+  [key: string]: any; // Para propiedades adicionales
+}
+
+interface AvailableFilters {
+  [key: string]: number;
+}
+
 export default function BusquedaPage() {
   const searchParams = useSearchParams();
   const query = searchParams.get('q') || '';
   
-  const [searchTerm, setSearchTerm] = useState(query);
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [searchIndex, setSearchIndex] = useState([]);
-  const [filteredResults, setFilteredResults] = useState([]);
-  const [activeFilters, setActiveFilters] = useState([]);
-  const [availableFilters, setAvailableFilters] = useState({});
+  const [searchTerm, setSearchTerm] = useState<string>(query);
+  const [results, setResults] = useState<SearchItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [searchIndex, setSearchIndex] = useState<SearchItem[]>([]);
+  const [filteredResults, setFilteredResults] = useState<SearchItem[]>([]);
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [availableFilters, setAvailableFilters] = useState<AvailableFilters>({});
 
   // Cargar el índice de búsqueda
   useEffect(() => {
@@ -29,12 +45,47 @@ export default function BusquedaPage() {
         if (!response.ok) {
           throw new Error('No se pudo cargar el índice de búsqueda');
         }
-        const data = await response.json();
+        const data: SearchItem[] = await response.json();
         console.log(`Índice de búsqueda cargado con ${data.length} elementos`);
         setSearchIndex(data);
       } catch (error) {
         console.error('Error al cargar el índice de búsqueda:', error);
-        // Aquí podrías cargar datos de respaldo si es necesario
+        // Datos de respaldo en caso de error
+        const fallbackData: SearchItem[] = [
+          {
+            id: '1',
+            title: 'Pagar factura',
+            description: 'Realiza el pago de tu factura de energía de manera fácil y segura',
+            content: 'Puedes pagar tu factura a través de múltiples canales',
+            type: 'pago',
+            url: '/servicios/pagar-factura'
+          },
+          {
+            id: '2',
+            title: 'Tarifas de energía',
+            description: 'Consulta las tarifas vigentes de energía eléctrica',
+            content: 'Información sobre tarifas por estrato y tipo de usuario',
+            type: 'tarifa',
+            url: '/tarifas'
+          },
+          {
+            id: '3',
+            title: 'Suspensiones programadas',
+            description: 'Consulta los cortes programados de energía en tu zona',
+            content: 'Información sobre mantenimientos y suspensiones del servicio',
+            type: 'suspension',
+            url: '/suspensiones-programadas'
+          },
+          {
+            id: '4',
+            title: 'Contáctenos',
+            description: 'Canales de atención y contacto con ElectroHuila',
+            content: 'Teléfonos, oficinas y medios de contacto disponibles',
+            type: 'contacto',
+            url: '/contactenos'
+          }
+        ];
+        setSearchIndex(fallbackData);
       } finally {
         setLoading(false);
       }
@@ -51,7 +102,7 @@ export default function BusquedaPage() {
   }, [query, searchIndex]);
 
   // Función para realizar la búsqueda
-  const performSearch = (term) => {
+  const performSearch = (term: string) => {
     if (!term.trim() || term.trim().length < 2 || searchIndex.length === 0) {
       setResults([]);
       setFilteredResults([]);
@@ -65,11 +116,11 @@ export default function BusquedaPage() {
       const searchTermLower = term.toLowerCase();
       
       // Función de puntuación para resultados más relevantes
-      const getScore = (item) => {
+      const getScore = (item: SearchItem): number => {
         let score = 0;
         
         // Título coincidente (mayor peso)
-        if (item.title.toLowerCase().includes(searchTermLower)) {
+        if (item.title && item.title.toLowerCase().includes(searchTermLower)) {
           score += 10;
           // Título comienza con el término (aún mayor peso)
           if (item.title.toLowerCase().startsWith(searchTermLower)) {
@@ -93,7 +144,7 @@ export default function BusquedaPage() {
         }
         
         // URL coincidente (menor peso)
-        if (item.url.toLowerCase().includes(searchTermLower)) {
+        if (item.url && item.url.toLowerCase().includes(searchTermLower)) {
           score += 1;
         }
         
@@ -104,20 +155,20 @@ export default function BusquedaPage() {
       const searchResults = searchIndex
         .filter(item => {
           return (
-            item.title.toLowerCase().includes(searchTermLower) ||
+            (item.title && item.title.toLowerCase().includes(searchTermLower)) ||
             (item.description && item.description.toLowerCase().includes(searchTermLower)) ||
             (item.content && item.content.toLowerCase().includes(searchTermLower)) ||
             (item.type && item.type.toLowerCase().includes(searchTermLower)) ||
-            item.url.toLowerCase().includes(searchTermLower)
+            (item.url && item.url.toLowerCase().includes(searchTermLower))
           );
         })
         .map(item => ({ ...item, score: getScore(item) }))
-        .sort((a, b) => b.score - a.score);
+        .sort((a, b) => (b.score || 0) - (a.score || 0));
       
       console.log(`Término de búsqueda: "${searchTermLower}" - ${searchResults.length} resultados`);
       
       // Configurar filtros disponibles
-      const filters = {};
+      const filters: AvailableFilters = {};
       searchResults.forEach(item => {
         if (item.type) {
           filters[item.type] = (filters[item.type] || 0) + 1;
@@ -132,19 +183,19 @@ export default function BusquedaPage() {
   };
 
   // Función para manejar envío del formulario
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     performSearch(searchTerm);
     
     // Actualizar URL con el nuevo término de búsqueda
-    const url = new URL(window.location);
+    const url = new URL(window.location.href);
     url.searchParams.set('q', searchTerm);
-    window.history.pushState({}, '', url);
+    window.history.pushState({}, '', url.toString());
   };
 
   // Función para aplicar filtros
-  const toggleFilter = (filter) => {
-    let newFilters;
+  const toggleFilter = (filter: string) => {
+    let newFilters: string[];
     
     if (activeFilters.includes(filter)) {
       newFilters = activeFilters.filter(f => f !== filter);
@@ -169,8 +220,8 @@ export default function BusquedaPage() {
   };
 
   // Traducir tipos a español
-  const getTypeLabel = (type) => {
-    const types = {
+  const getTypeLabel = (type: string): string => {
+    const types: Record<string, string> = {
       'tarifa': 'Tarifa',
       'facturacion': 'Facturación',
       'pago': 'Pagos',
@@ -189,7 +240,7 @@ export default function BusquedaPage() {
   };
 
   // Función para resaltar el término de búsqueda en el texto
-  const highlightSearchTerm = (text, term) => {
+  const highlightSearchTerm = (text: string, term: string): string => {
     if (!text || !term.trim()) return text;
     
     const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
@@ -197,7 +248,7 @@ export default function BusquedaPage() {
   };
 
   // Función para extraer fragmento relevante del contenido
-  const getContentSnippet = (content, term) => {
+  const getContentSnippet = (content: string, term: string): string => {
     if (!content || !term.trim()) return '';
     
     const termLower = term.toLowerCase();
@@ -316,7 +367,7 @@ export default function BusquedaPage() {
                 <div key={item.id} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
                   <Link href={item.url} className="block">
                     <h2 className="text-xl font-semibold text-blue-600 mb-2 hover:underline" 
-                        dangerouslySetInnerHTML={{ __html: highlightSearchTerm(item.title, query) }}>
+                        dangerouslySetInnerHTML={{ __html: highlightSearchTerm(item.title || '', query) }}>
                     </h2>
                     
                     <div className="flex items-center text-xs text-gray-500 mb-3">

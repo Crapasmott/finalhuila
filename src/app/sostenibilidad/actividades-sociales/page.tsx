@@ -1,7 +1,16 @@
 'use client';
 
-export default function ActividadesSociales() {
-  const actividades = [
+// Interfaces TypeScript
+interface Actividad {
+  id: number;
+  imagen: string;
+  titulo: string;
+  subtitulo: string;
+  descripcion: string;
+}
+
+export default function ActividadesSociales(): React.JSX.Element {
+  const actividades: Actividad[] = [
     {
       id: 1,
       imagen: "/images/mesa-energia-san-agustin.jpg",
@@ -24,6 +33,17 @@ export default function ActividadesSociales() {
       descripcion: "participación a la III gran salón y pasarela artesanal tradición y maestría 2023 entre otras."
     }
   ];
+
+  // Función para manejar errores de carga de imagen
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>): void => {
+    const imgElement = e.target as HTMLImageElement;
+    const fallbackElement = imgElement.nextElementSibling as HTMLElement;
+    
+    if (imgElement && fallbackElement) {
+      imgElement.style.display = 'none';
+      fallbackElement.style.display = 'flex';
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -57,7 +77,7 @@ export default function ActividadesSociales() {
 
         {/* Grid de actividades */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
-          {actividades.map((actividad) => (
+          {actividades.map((actividad: Actividad) => (
             <div key={actividad.id} className="text-center">
               {/* Imagen circular con borde verde */}
               <div className="relative mx-auto mb-6">
@@ -71,11 +91,7 @@ export default function ActividadesSociales() {
                     src={actividad.imagen}
                     alt={actividad.titulo}
                     className="w-full h-full object-cover"
-                    onError={(e) => {
-                      // Fallback si la imagen no carga
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'flex';
-                    }}
+                    onError={handleImageError}
                   />
                   {/* Fallback content */}
                   <div 

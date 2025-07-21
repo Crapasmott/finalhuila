@@ -1,14 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 
-const EquipoDirectivoAnimado = () => {
-  // Estado para controlar las animaciones
-  const [animateCards, setAnimateCards] = useState(false);
-  const [activeCard, setActiveCard] = useState(null);
-  const [hoveredCard, setHoveredCard] = useState(null);
+// Interfaces TypeScript
+interface MiembroEquipo {
+  id: number;
+  nombre: string;
+  apellido: string;
+  cargo: string;
+  imagen: string;
+  experiencia: string;
+  formacion: string[];
+  email: string;
+  linkedin: string;
+}
+
+interface Comite {
+  nombre: string;
+  descripcion: string;
+  icon: string;
+}
+
+const EquipoDirectivoAnimado: React.FC = () => {
+  // Estado para controlar las animaciones - CORREGIDO con tipos
+  const [animateCards, setAnimateCards] = useState<boolean>(false);
+  const [activeCard, setActiveCard] = useState<number | null>(null);
+  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   
   // Datos del equipo directivo con información adicional
-  const miembrosEquipo = [
+  const miembrosEquipo: MiembroEquipo[] = [
     {
       id: 1,
       nombre: 'Nika Duniezhka Cuellar',
@@ -67,7 +86,7 @@ const EquipoDirectivoAnimado = () => {
   ];
 
   // Datos de los comités con descripciones
-  const comites = [
+  const comites: Comite[] = [
     {
       nombre: 'Gobierno Corporativo Talento Humano y Sostenibilidad',
       descripcion: 'Supervisa las políticas de gobierno corporativo y sostenibilidad',
@@ -223,7 +242,7 @@ const EquipoDirectivoAnimado = () => {
                     {/* Enlaces sociales */}
                     <div className="flex items-center justify-center space-x-4 mt-4 pt-4 border-t border-white/20">
                       <a 
-                        href={miembro.email} 
+                        href={`mailto:${miembro.email}`}
                         className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
                       >
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -232,8 +251,10 @@ const EquipoDirectivoAnimado = () => {
                         </svg>
                       </a>
                       <a 
-                        href={miembro.linkedin} 
+                        href={miembro.linkedin}
                         className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
+                        target="_blank"
+                        rel="noopener noreferrer"
                       >
                         <span className="text-xs font-bold">in</span>
                       </a>

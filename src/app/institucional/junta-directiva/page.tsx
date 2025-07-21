@@ -3,8 +3,34 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 
+// Interfaces TypeScript
+interface DocumentData {
+    title: string;
+    size: string;
+    updateDate: string;
+    pdfUrl: string;
+}
+
+interface DocumentItemProps {
+    title: string;
+    size: string;
+    updateDate: string;
+    pdfUrl: string;
+}
+
+interface AccordionItemProps {
+    title: string;
+    documents?: DocumentData[];
+}
+
+interface AccordionData {
+    id: number;
+    title: string;
+    documents: DocumentData[];
+}
+
 // Componente para mostrar un documento
-const DocumentItem = ({ title, size, updateDate, pdfUrl }) => {
+const DocumentItem: React.FC<DocumentItemProps> = ({ title, size, updateDate, pdfUrl }) => {
     return (
         <div style={{ 
             display: 'flex', 
@@ -87,8 +113,8 @@ const DocumentItem = ({ title, size, updateDate, pdfUrl }) => {
 };
 
 // Componente de Acordeón para elementos desplegables
-const AccordionItem = ({ title, documents = [] }) => {
-    const [isOpen, setIsOpen] = useState(false);
+const AccordionItem: React.FC<AccordionItemProps> = ({ title, documents = [] }) => {
+    const [isOpen, setIsOpen] = useState<boolean>(false);
     
     return (
         <div style={{ 
@@ -147,7 +173,7 @@ const AccordionItem = ({ title, documents = [] }) => {
                     color: '#666'
                 }}>
                     {documents.length > 0 ? (
-                        documents.map((doc, index) => (
+                        documents.map((doc: DocumentData, index: number) => (
                             <DocumentItem 
                                 key={index}
                                 title={doc.title}
@@ -165,14 +191,14 @@ const AccordionItem = ({ title, documents = [] }) => {
     );
 };
 
-export default function JuntaDirectivaPage() {
+export default function JuntaDirectivaPage(): React.JSX.Element {
     // Estados para manejar formulario y autenticación
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [username, setUsername] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     
     // Datos de documentos para cada sección del acordeón
-    const accordionItems = [
+    const accordionItems: AccordionData[] = [
         { 
             id: 1, 
             title: 'Conformación Asamblea de Accionistas',
@@ -366,7 +392,7 @@ export default function JuntaDirectivaPage() {
     ];
     
     // Función para manejar inicio de sesión
-    const handleLogin = (e) => {
+    const handleLogin = (e: React.FormEvent<HTMLFormElement>): void => {
         e.preventDefault();
         // Aquí normalmente verificarías las credenciales con un backend
         // Por ahora, vamos a simular una autenticación exitosa
@@ -376,7 +402,7 @@ export default function JuntaDirectivaPage() {
     };
     
     // Función para cerrar sesión
-    const handleLogout = () => {
+    const handleLogout = (): void => {
         setIsAuthenticated(false);
         setUsername('');
         setPassword('');
@@ -565,8 +591,8 @@ export default function JuntaDirectivaPage() {
                                             cursor: 'pointer',
                                             transition: 'background-color 0.3s'
                                         }}
-                                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e06a00'}
-                                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f27b13'}
+                                        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#e06a00')}
+                                        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#f27b13')}
                                     >
                                         Acceder
                                     </button>
@@ -589,7 +615,7 @@ export default function JuntaDirectivaPage() {
                 ) : (
                     // Sección de Acordeón (cuando el usuario está autenticado)
                     <div style={{ maxWidth: '900px' }}>
-                        {accordionItems.map((item) => (
+                        {accordionItems.map((item: AccordionData) => (
                             <AccordionItem 
                                 key={item.id} 
                                 title={item.title}

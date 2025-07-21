@@ -1,7 +1,14 @@
 'use client';
 
-export default function ApoyoSocialDeporte() {
-  const apoyos = [
+// Interfaces TypeScript
+interface ApoyoDeportivo {
+  titulo: string;
+  descripcion: string;
+  icono: string;
+}
+
+export default function ApoyoSocialDeporte(): React.JSX.Element {
+  const apoyos: ApoyoDeportivo[] = [
     {
       titulo: "Atlético Huila",
       descripcion: "Patrocinio y apoyo al equipo profesional de fútbol de la región",
@@ -23,6 +30,17 @@ export default function ApoyoSocialDeporte() {
       icono: "🏆"
     }
   ];
+
+  // Función para manejar errores de carga de imagen
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>): void => {
+    const imgElement = e.target as HTMLImageElement;
+    const fallbackElement = imgElement.nextElementSibling as HTMLElement;
+    
+    if (imgElement && fallbackElement) {
+      imgElement.style.display = 'none';
+      fallbackElement.style.display = 'flex';
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -57,11 +75,7 @@ export default function ApoyoSocialDeporte() {
                   src="/images/apoyo-social-deporte.jpg"
                   alt="Apoyo Social al Deporte - ElectroHuila"
                   className="w-full h-full object-cover"
-                  onError={(e) => {
-                    // Fallback si la imagen no carga
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
+                  onError={handleImageError}
                 />
                 {/* Fallback content */}
                 <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white text-6xl font-bold" style={{display: 'none'}}>
@@ -85,7 +99,7 @@ export default function ApoyoSocialDeporte() {
 
         {/* Sección de tipos de apoyo */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {apoyos.map((apoyo, index) => (
+          {apoyos.map((apoyo: ApoyoDeportivo, index: number) => (
             <div key={index} className="bg-white rounded-lg shadow-sm p-6 text-center hover:shadow-md transition-shadow">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-3xl">{apoyo.icono}</span>

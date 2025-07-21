@@ -180,7 +180,7 @@ export function TimelineAnimado() {
                 title: 'Transformación digital',
                 description: 'Inicio de la transformación digital y modernización de servicios.',
                 icon: '🌐',
-                imageUrl: '/images/historia/placeholder.jpg'
+                imageUrl: '/images/historia/era tecnologica.png'
             }
         ]
     ];

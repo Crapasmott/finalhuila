@@ -1,7 +1,59 @@
 import { useState, useEffect, useCallback, useReducer } from 'react';
 
+// Interfaces TypeScript
+interface Documento {
+    id: string;
+    titulo: string;
+    contenido?: string;
+    fechaCreacion: string;
+    fechaActualizacion?: string;
+    publicado: boolean;
+    tipo?: string;
+    autor?: string;
+    categoria?: string;
+    tags?: string[];
+    url?: string;
+    tamaño?: string;
+    [key: string]: any;
+}
+
+interface Paginacion {
+    pagina: number;
+    limite: number;
+    total: number;
+}
+
+interface Filtros {
+    [key: string]: any;
+}
+
+interface Estado {
+    documentos: Documento[];
+    cargando: boolean;
+    error: string | null;
+    filtros: Filtros;
+    paginacion: Paginacion;
+}
+
+interface OpcionesIniciales {
+    filtrosIniciales?: Filtros;
+    limite?: number;
+    cargarAutomaticamente?: boolean;
+}
+
+interface RespuestaAPI {
+    items?: Documento[];
+    documentos?: Documento[];
+    total?: number;
+}
+
+interface AccionState {
+    type: string;
+    payload?: any;
+}
+
 // Estado inicial
-const estadoInicial = {
+const estadoInicial: Estado = {
     documentos: [],
     cargando: false,
     error: null,
@@ -25,10 +77,10 @@ const TIPOS_ACCION = {
     ACTUALIZAR_DOCUMENTO: 'ACTUALIZAR_DOCUMENTO',
     ELIMINAR_DOCUMENTO: 'ELIMINAR_DOCUMENTO',
     PUBLICAR_DOCUMENTO: 'PUBLICAR_DOCUMENTO'
-};
+} as const;
 
 // Reducer para manejar el estado
-const documentosReducer = (state, action) => {
+const documentosReducer = (state: Estado, action: AccionState): Estado => {
     switch (action.type) {
         case TIPOS_ACCION.INICIAR_CARGA:
             return {
@@ -40,10 +92,10 @@ const documentosReducer = (state, action) => {
         case TIPOS_ACCION.CARGAR_EXITO:
             return {
                 ...state,
-                documentos: action.payload.documentos,
+                documentos: action.payload.documentos || [],
                 paginacion: {
                     ...state.paginacion,
-                    total: action.payload.total || action.payload.documentos.length
+                    total: action.payload.total || action.payload.documentos?.length || 0
                 },
                 cargando: false,
                 error: null
@@ -53,7 +105,7 @@ const documentosReducer = (state, action) => {
             return {
                 ...state,
                 cargando: false,
-                error: action.payload
+                error: action.payload || 'Error desconocido'
             };
 
         case TIPOS_ACCION.ACTUALIZAR_FILTROS:
@@ -101,7 +153,7 @@ const documentosReducer = (state, action) => {
         case TIPOS_ACCION.ACTUALIZAR_DOCUMENTO:
             return {
                 ...state,
-                documentos: state.documentos.map(doc =>
+                documentos: state.documentos.map((doc: Documento) =>
                     doc.id === action.payload.id ? { ...doc, ...action.payload } : doc
                 )
             };
@@ -109,7 +161,7 @@ const documentosReducer = (state, action) => {
         case TIPOS_ACCION.ELIMINAR_DOCUMENTO:
             return {
                 ...state,
-                documentos: state.documentos.filter(doc => doc.id !== action.payload),
+                documentos: state.documentos.filter((doc: Documento) => doc.id !== action.payload),
                 paginacion: {
                     ...state.paginacion,
                     total: state.paginacion.total - 1
@@ -119,7 +171,7 @@ const documentosReducer = (state, action) => {
         case TIPOS_ACCION.PUBLICAR_DOCUMENTO:
             return {
                 ...state,
-                documentos: state.documentos.map(doc =>
+                documentos: state.documentos.map((doc: Documento) =>
                     doc.id === action.payload.id ? { ...doc, publicado: action.payload.publicado } : doc
                 )
             };
@@ -131,10 +183,10 @@ const documentosReducer = (state, action) => {
 
 /**
  * Hook personalizado para la gestión de documentos
- * @param {object} opcionesIniciales - Opciones iniciales para el gestor
- * @returns {object} - Estado y métodos para gestionar documentos
+ * @param opcionesIniciales - Opciones iniciales para el gestor
+ * @returns Estado y métodos para gestionar documentos
  */
-export function useGestorDocumentos(opcionesIniciales = {}) {
+export function useGestorDocumentos(opcionesIniciales: OpcionesIniciales = {}) {
     const [state, dispatch] = useReducer(documentosReducer, {
         ...estadoInicial,
         filtros: opcionesIniciales.filtrosIniciales || {},
@@ -147,7 +199,7 @@ export function useGestorDocumentos(opcionesIniciales = {}) {
     const { documentos, cargando, error, filtros, paginacion } = state;
 
     // Obtener documentos desde la API
-    const obtenerDocumentos = useCallback(async (filtrosAdicionales = {}) => {
+    const obtenerDocumentos = useCallback(async (filtrosAdicionales: Filtros = {}): Promise<RespuestaAPI> => {
         dispatch({ type: TIPOS_ACCION.INICIAR_CARGA });
 
         try {
@@ -156,13 +208,13 @@ export function useGestorDocumentos(opcionesIniciales = {}) {
             // Agregar filtros actuales
             Object.entries({ ...filtros, ...filtrosAdicionales }).forEach(([clave, valor]) => {
                 if (valor !== undefined && valor !== null && valor !== '') {
-                    params.append(clave, valor);
+                    params.append(clave, String(valor));
                 }
             });
 
             // Agregar paginación
-            params.append('pagina', paginacion.pagina);
-            params.append('limite', paginacion.limite);
+            params.append('pagina', String(paginacion.pagina));
+            params.append('limite', String(paginacion.limite));
 
             const respuesta = await fetch(`/api/documentos?${params}`);
 
@@ -170,40 +222,41 @@ export function useGestorDocumentos(opcionesIniciales = {}) {
                 throw new Error(`Error al obtener documentos: ${respuesta.status}`);
             }
 
-            const datos = await respuesta.json();
+            const datos: RespuestaAPI = await respuesta.json();
 
             dispatch({
                 type: TIPOS_ACCION.CARGAR_EXITO,
                 payload: {
-                    documentos: datos.items || datos,
-                    total: datos.total
+                    documentos: datos.items || datos.documentos || [],
+                    total: datos.total || 0
                 }
             });
 
             return datos;
         } catch (err) {
-            dispatch({ type: TIPOS_ACCION.CARGAR_ERROR, payload: err.message });
+            const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
+            dispatch({ type: TIPOS_ACCION.CARGAR_ERROR, payload: errorMessage });
             throw err;
         }
     }, [filtros, paginacion.pagina, paginacion.limite]);
 
     // Actualizar filtros
-    const actualizarFiltros = useCallback((nuevosFiltros) => {
+    const actualizarFiltros = useCallback((nuevosFiltros: Filtros): void => {
         dispatch({ type: TIPOS_ACCION.ACTUALIZAR_FILTROS, payload: nuevosFiltros });
     }, []);
 
     // Cambiar página
-    const cambiarPagina = useCallback((nuevaPagina) => {
+    const cambiarPagina = useCallback((nuevaPagina: number): void => {
         dispatch({ type: TIPOS_ACCION.CAMBIAR_PAGINA, payload: nuevaPagina });
     }, []);
 
     // Cambiar límite de elementos por página
-    const cambiarLimite = useCallback((nuevoLimite) => {
+    const cambiarLimite = useCallback((nuevoLimite: number): void => {
         dispatch({ type: TIPOS_ACCION.CAMBIAR_LIMITE, payload: nuevoLimite });
     }, []);
 
     // Crear un nuevo documento
-    const crearDocumento = useCallback(async (nuevoDocumento) => {
+    const crearDocumento = useCallback(async (nuevoDocumento: Partial<Documento>): Promise<Documento> => {
         try {
             const respuesta = await fetch('/api/documentos', {
                 method: 'POST',
@@ -217,7 +270,7 @@ export function useGestorDocumentos(opcionesIniciales = {}) {
                 throw new Error(`Error al crear documento: ${respuesta.status}`);
             }
 
-            const documentoCreado = await respuesta.json();
+            const documentoCreado: Documento = await respuesta.json();
 
             dispatch({ type: TIPOS_ACCION.AGREGAR_DOCUMENTO, payload: documentoCreado });
 
@@ -229,7 +282,7 @@ export function useGestorDocumentos(opcionesIniciales = {}) {
     }, []);
 
     // Actualizar un documento
-    const actualizarDocumento = useCallback(async (id, cambios) => {
+    const actualizarDocumento = useCallback(async (id: string, cambios: Partial<Documento>): Promise<Documento> => {
         try {
             const respuesta = await fetch(`/api/documentos/${id}`, {
                 method: 'PUT',
@@ -243,7 +296,7 @@ export function useGestorDocumentos(opcionesIniciales = {}) {
                 throw new Error(`Error al actualizar documento: ${respuesta.status}`);
             }
 
-            const documentoActualizado = await respuesta.json();
+            const documentoActualizado: Documento = await respuesta.json();
 
             dispatch({
                 type: TIPOS_ACCION.ACTUALIZAR_DOCUMENTO,
@@ -258,7 +311,7 @@ export function useGestorDocumentos(opcionesIniciales = {}) {
     }, []);
 
     // Eliminar un documento
-    const eliminarDocumento = useCallback(async (id) => {
+    const eliminarDocumento = useCallback(async (id: string): Promise<boolean> => {
         try {
             const respuesta = await fetch(`/api/documentos/${id}`, {
                 method: 'DELETE'
@@ -278,7 +331,7 @@ export function useGestorDocumentos(opcionesIniciales = {}) {
     }, []);
 
     // Publicar o despublicar un documento
-    const cambiarEstadoPublicacion = useCallback(async (id, publicado) => {
+    const cambiarEstadoPublicacion = useCallback(async (id: string, publicado: boolean): Promise<boolean> => {
         try {
             const respuesta = await fetch(`/api/documentos/${id}/publicar`, {
                 method: 'PATCH',
@@ -307,16 +360,63 @@ export function useGestorDocumentos(opcionesIniciales = {}) {
     // Cargar documentos al cambiar la página, límite o filtros
     useEffect(() => {
         if (opcionesIniciales.cargarAutomaticamente !== false) {
-            obtenerDocumentos();
+            obtenerDocumentos().catch(error => {
+                console.error('Error al cargar documentos automáticamente:', error);
+            });
         }
     }, [paginacion.pagina, paginacion.limite, filtros, obtenerDocumentos, opcionesIniciales.cargarAutomaticamente]);
 
+    // Métodos auxiliares
+    const limpiarFiltros = useCallback((): void => {
+        dispatch({ type: TIPOS_ACCION.ACTUALIZAR_FILTROS, payload: {} });
+    }, []);
+
+    const recargarDocumentos = useCallback((): Promise<RespuestaAPI> => {
+        return obtenerDocumentos();
+    }, [obtenerDocumentos]);
+
+    const obtenerDocumentoPorId = useCallback((id: string): Documento | undefined => {
+        return documentos.find(doc => doc.id === id);
+    }, [documentos]);
+
+    const contarDocumentosPublicados = useCallback((): number => {
+        return documentos.filter(doc => doc.publicado).length;
+    }, [documentos]);
+
+    const obtenerDocumentosPorTipo = useCallback((tipo: string): Documento[] => {
+        return documentos.filter(doc => doc.tipo === tipo);
+    }, [documentos]);
+
+    const buscarDocumentos = useCallback((termino: string): Documento[] => {
+        const terminoLower = termino.toLowerCase();
+        return documentos.filter(doc => 
+            doc.titulo.toLowerCase().includes(terminoLower) ||
+            doc.contenido?.toLowerCase().includes(terminoLower) ||
+            doc.autor?.toLowerCase().includes(terminoLower) ||
+            doc.categoria?.toLowerCase().includes(terminoLower)
+        );
+    }, [documentos]);
+
+    // Estadísticas útiles
+    const estadisticas = {
+        total: documentos.length,
+        publicados: contarDocumentosPublicados(),
+        borradores: documentos.length - contarDocumentosPublicados(),
+        tiposUnicos: [...new Set(documentos.map(doc => doc.tipo).filter(Boolean))],
+        categoriasUnicas: [...new Set(documentos.map(doc => doc.categoria).filter(Boolean))],
+        autoresUnicos: [...new Set(documentos.map(doc => doc.autor).filter(Boolean))]
+    };
+
     return {
+        // Estado
         documentos,
         cargando,
         error,
         filtros,
         paginacion,
+        estadisticas,
+        
+        // Métodos principales
         obtenerDocumentos,
         actualizarFiltros,
         cambiarPagina,
@@ -324,6 +424,57 @@ export function useGestorDocumentos(opcionesIniciales = {}) {
         crearDocumento,
         actualizarDocumento,
         eliminarDocumento,
-        cambiarEstadoPublicacion
+        cambiarEstadoPublicacion,
+        
+        // Métodos auxiliares
+        limpiarFiltros,
+        recargarDocumentos,
+        obtenerDocumentoPorId,
+        contarDocumentosPublicados,
+        obtenerDocumentosPorTipo,
+        buscarDocumentos
     };
 }
+
+// Hook tipado específico para casos de uso comunes
+export function useGestorDocumentosBasico() {
+    return useGestorDocumentos({
+        limite: 20,
+        cargarAutomaticamente: true
+    });
+}
+
+// Hook tipado para documentos con filtros específicos
+export function useGestorDocumentosConFiltros(filtrosIniciales: Filtros) {
+    return useGestorDocumentos({
+        filtrosIniciales,
+        limite: 15,
+        cargarAutomaticamente: true
+    });
+}
+
+// Hook tipado para documentos con paginación personalizada
+export function useGestorDocumentosConPaginacion(limite: number = 10) {
+    return useGestorDocumentos({
+        limite,
+        cargarAutomaticamente: true
+    });
+}
+
+// Hook tipado para gestión manual (sin carga automática)
+export function useGestorDocumentosManual(opcionesIniciales: OpcionesIniciales = {}) {
+    return useGestorDocumentos({
+        ...opcionesIniciales,
+        cargarAutomaticamente: false
+    });
+}
+
+// Exportar tipos para uso externo
+export type { 
+    Documento, 
+    Filtros, 
+    Paginacion, 
+    OpcionesIniciales, 
+    RespuestaAPI,
+    Estado 
+};

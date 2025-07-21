@@ -6,18 +6,39 @@ import {
     ChevronLeft, ChevronRight, ExternalLink, Clock, Tag, ArrowLeft 
 } from 'lucide-react';
 
+// Interfaces TypeScript para mejor tipado
+interface Boletin {
+    id: string;
+    titulo: string;
+    fecha: string;
+    fechaFormateada: string;
+    tipo: string;
+    url: string;
+    tamaño: string;
+    año: number;
+    hits: number;
+    semana?: string;
+    mes?: string;
+}
+
+interface Filtros {
+    año: string;
+    tipo: string;
+    busqueda: string;
+}
+
 const PaginaBoletinesCompleta = () => {
-    const [boletines, setBoletines] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [filtros, setFiltros] = useState({
+    const [boletines, setBoletines] = useState<Boletin[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [filtros, setFiltros] = useState<Filtros>({
         año: '',
         tipo: '',
         busqueda: ''
     });
-    const [paginaActual, setPaginaActual] = useState(1);
-    const [modalAbierto, setModalAbierto] = useState(false);
-    const [boletinSeleccionado, setBoletinSeleccionado] = useState(null);
-    const [loadingPdf, setLoadingPdf] = useState(false);
+    const [paginaActual, setPaginaActual] = useState<number>(1);
+    const [modalAbierto, setModalAbierto] = useState<boolean>(false);
+    const [boletinSeleccionado, setBoletinSeleccionado] = useState<Boletin | null>(null);
+    const [loadingPdf, setLoadingPdf] = useState<boolean>(false);
     const boletinesPorPagina = 12;
 
     // Cargar todos los boletines de todos los años
@@ -27,7 +48,7 @@ const PaginaBoletinesCompleta = () => {
                 console.log('🔄 Cargando todos los boletines...');
                 
                 const añosDisponibles = [2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018];
-                let todosLosBoletines = [];
+                let todosLosBoletines: Boletin[] = []; // ✅ CORRECIÓN: Tipado explícito
 
                 for (const año of añosDisponibles) {
                     try {
@@ -35,7 +56,7 @@ const PaginaBoletinesCompleta = () => {
                         const data = await response.json();
                         
                         if (data.success && data.data) {
-                            const boletinesProcesados = data.data.map(item => ({
+                            const boletinesProcesados: Boletin[] = data.data.map((item: any) => ({
                                 id: `${año}-${item.id}`,
                                 titulo: item.titulo || item.archivo || 'Sin título',
                                 fecha: item.fecha || new Date().toISOString(),
@@ -48,8 +69,8 @@ const PaginaBoletinesCompleta = () => {
                                 semana: item.semana || '',
                                 mes: item.mes || ''
                             }));
-                            
-                            todosLosBoletines = [...todosLosBoletines, ...boletinesProcesados];
+
+                            todosLosBoletines = [...todosLosBoletines, ...boletinesProcesados]; // ✅ CORREGIDO: Ya no hay error de tipado
                         }
                     } catch (error) {
                         console.warn(`Error cargando año ${año}:`, error);
@@ -58,7 +79,7 @@ const PaginaBoletinesCompleta = () => {
 
                 // Ordenar por fecha más reciente
                 const boletinesOrdenados = todosLosBoletines.sort((a, b) => 
-                    new Date(b.fecha) - new Date(a.fecha)
+                    new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
                 );
                 
                 console.log(`✅ ${boletinesOrdenados.length} boletines cargados`);
@@ -69,7 +90,7 @@ const PaginaBoletinesCompleta = () => {
                 console.error('❌ Error al cargar boletines:', error);
                 
                 // Datos de ejemplo en caso de error
-                const datosEjemplo = [
+                const datosEjemplo: Boletin[] = [
                     {
                         id: '2025-7413',
                         titulo: 'BOLETÍN DE PRENSA SEMANA 27 DEL 2025',
@@ -103,7 +124,7 @@ const PaginaBoletinesCompleta = () => {
     }, []);
 
     // Determinar tipo de documento
-    const determinarTipo = (titulo) => {
+    const determinarTipo = (titulo: string): string => {
         const tituloLower = titulo.toLowerCase();
         if (tituloLower.includes('comunicado')) return 'Comunicado';
         if (tituloLower.includes('consignas')) return 'Consignas';
@@ -111,7 +132,7 @@ const PaginaBoletinesCompleta = () => {
     };
 
     // Obtener icono según el tipo
-    const obtenerIcono = (tipo) => {
+    const obtenerIcono = (tipo: string): string => {
         switch (tipo) {
             case 'Comunicado': return '📋';
             case 'Consignas': return '⚡';
@@ -120,7 +141,7 @@ const PaginaBoletinesCompleta = () => {
     };
 
     // Obtener color según el tipo
-    const obtenerColor = (tipo) => {
+    const obtenerColor = (tipo: string): string => {
         switch (tipo) {
             case 'Comunicado': return 'from-green-500 to-emerald-600';
             case 'Consignas': return 'from-purple-500 to-violet-600';
@@ -145,7 +166,7 @@ const PaginaBoletinesCompleta = () => {
     const boletinesPagina = boletinesFiltrados.slice(indiceInicio, indiceFin);
 
     // Funciones de modal
-    const abrirModal = async (boletin) => {
+    const abrirModal = async (boletin: Boletin) => {
         setBoletinSeleccionado(boletin);
         setModalAbierto(true);
         setLoadingPdf(true);
@@ -169,9 +190,11 @@ const PaginaBoletinesCompleta = () => {
     const tiposDisponibles = [...new Set(boletines.map(b => b.tipo))];
 
     // Navegar entre documentos en el modal
-    const navegarModal = (direccion) => {
+    const navegarModal = (direccion: 'anterior' | 'siguiente') => {
+        if (!boletinSeleccionado) return;
+        
         const indiceActual = boletinesFiltrados.findIndex(b => b.id === boletinSeleccionado.id);
-        let nuevoIndice;
+        let nuevoIndice: number;
         
         if (direccion === 'anterior') {
             nuevoIndice = indiceActual > 0 ? indiceActual - 1 : boletinesFiltrados.length - 1;
@@ -269,7 +292,7 @@ const PaginaBoletinesCompleta = () => {
                             >
                                 <option value="">Todos los años</option>
                                 {añosDisponibles.map(año => (
-                                    <option key={año} value={año}>{año}</option>
+                                    <option key={año} value={año.toString()}>{año}</option>
                                 ))}
                             </select>
 
@@ -551,10 +574,11 @@ const PaginaBoletinesCompleta = () => {
                                                     className="w-full h-96"
                                                     title={`Vista previa: ${boletinSeleccionado.titulo}`}
                                                     onLoad={() => console.log('PDF cargado exitosamente')}
-                                                    onError={(e) => {
+                                                    onError={(e: React.SyntheticEvent<HTMLIFrameElement, Event>) => {
                                                         console.log('Error con Google Viewer, intentando cargar directamente');
                                                         // Fallback a carga directa
-                                                        e.target.src = `${boletinSeleccionado.url}#toolbar=1&navpanes=1&scrollbar=1&page=1&view=FitH`;
+                                                        const target = e.target as HTMLIFrameElement;
+                                                        target.src = `${boletinSeleccionado.url}#toolbar=1&navpanes=1&scrollbar=1&page=1&view=FitH`;
                                                     }}
                                                 />
                                             </div>

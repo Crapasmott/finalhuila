@@ -3,9 +3,29 @@
 import React from 'react';
 import Link from 'next/link';
 
-export default function BreadcrumbSimple({ items = [] }) {
+// Interfaces TypeScript
+interface BreadcrumbItem {
+    label: string;
+    href: string | null;
+    isActive: boolean;
+}
+
+interface BreadcrumbSimpleProps {
+    items?: BreadcrumbItem[];
+}
+
+interface BreadcrumbCompactProps {
+    items?: BreadcrumbItem[];
+}
+
+interface BreadcrumbHeaderProps {
+    items?: BreadcrumbItem[];
+    title?: string;
+}
+
+export default function BreadcrumbSimple({ items = [] }: BreadcrumbSimpleProps): React.JSX.Element {
     // Si no se proporcionan items, usar los por defecto
-    const defaultItems = [
+    const defaultItems: BreadcrumbItem[] = [
         { label: 'Inicio', href: '/', isActive: false },
         { label: 'Institucional', href: '/institucional', isActive: false },
         { label: 'Quiénes Somos', href: null, isActive: true }
@@ -25,15 +45,15 @@ export default function BreadcrumbSimple({ items = [] }) {
                     </div>
 
                     <ol className="flex items-center space-x-1 text-sm">
-                        {breadcrumbItems.map((item, index) => (
+                        {breadcrumbItems.map((item: BreadcrumbItem, index: number) => (
                             <li key={index} className="flex items-center">
-                                {item.isActive ? (
-                                    // Elemento activo (último en la cadena)
+                                {item.isActive || !item.href ? (
+                                    // Elemento activo (último en la cadena) o sin href
                                     <span className="text-gray-900 font-semibold px-3 py-1 bg-white rounded-full shadow-sm border border-gray-200">
                                         {item.label}
                                     </span>
                                 ) : (
-                                    // Elemento con enlace
+                                    // Elemento con enlace (solo si href no es null)
                                     <Link 
                                         href={item.href}
                                         className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-1 rounded-full transition-all duration-200 font-medium"
@@ -68,8 +88,8 @@ export default function BreadcrumbSimple({ items = [] }) {
 }
 
 // Componente versión compacta para usar dentro de páginas
-export function BreadcrumbCompact({ items = [] }) {
-    const defaultItems = [
+export function BreadcrumbCompact({ items = [] }: BreadcrumbCompactProps): React.JSX.Element {
+    const defaultItems: BreadcrumbItem[] = [
         { label: 'Inicio', href: '/', isActive: false },
         { label: 'Institucional', href: '/institucional', isActive: false },
         { label: 'Quiénes Somos', href: null, isActive: true }
@@ -84,9 +104,9 @@ export function BreadcrumbCompact({ items = [] }) {
                 <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
             </svg>
 
-            {breadcrumbItems.map((item, index) => (
+            {breadcrumbItems.map((item: BreadcrumbItem, index: number) => (
                 <React.Fragment key={index}>
-                    {item.isActive ? (
+                    {item.isActive || !item.href ? (
                         <span className="text-gray-900 font-medium">
                             {item.label}
                         </span>
@@ -109,8 +129,8 @@ export function BreadcrumbCompact({ items = [] }) {
 }
 
 // Componente breadcrumb para headers de páginas
-export function BreadcrumbHeader({ items = [], title = "Página" }) {
-    const defaultItems = [
+export function BreadcrumbHeader({ items = [], title = "Página" }: BreadcrumbHeaderProps): React.JSX.Element {
+    const defaultItems: BreadcrumbItem[] = [
         { label: 'Inicio', href: '/', isActive: false },
         { label: 'Institucional', href: '/institucional', isActive: false }
     ];
@@ -126,14 +146,20 @@ export function BreadcrumbHeader({ items = [], title = "Página" }) {
                         <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
                     </svg>
 
-                    {breadcrumbItems.map((item, index) => (
+                    {breadcrumbItems.map((item: BreadcrumbItem, index: number) => (
                         <React.Fragment key={index}>
-                            <Link 
-                                href={item.href}
-                                className="text-blue-200 hover:text-white transition-colors"
-                            >
-                                {item.label}
-                            </Link>
+                            {item.href ? (
+                                <Link 
+                                    href={item.href}
+                                    className="text-blue-200 hover:text-white transition-colors"
+                                >
+                                    {item.label}
+                                </Link>
+                            ) : (
+                                <span className="text-blue-200">
+                                    {item.label}
+                                </span>
+                            )}
                             
                             {index < breadcrumbItems.length && (
                                 <span className="text-blue-300 mx-2">•</span>
@@ -152,3 +178,6 @@ export function BreadcrumbHeader({ items = [], title = "Página" }) {
         </div>
     );
 }
+
+// Exportar tipos para usar en otros componentes
+export type { BreadcrumbItem, BreadcrumbSimpleProps, BreadcrumbCompactProps, BreadcrumbHeaderProps };
