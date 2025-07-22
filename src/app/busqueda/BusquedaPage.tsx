@@ -5,8 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Search, Filter, X } from 'lucide-react';
 
-// Componentes de página
-import Breadcrumb from '@/components/Breadcrumb';
+// Componentes de página - IMPORTACIÓN CORREGIDA
+import Breadcrumb from '../../../components/Breadcrumb'; // Cambio aquí
 
 // Interfaces TypeScript
 interface SearchItem {
@@ -22,6 +22,11 @@ interface SearchItem {
 
 interface AvailableFilters {
   [key: string]: number;
+}
+
+interface BreadcrumbItem {
+  label: string;
+  url?: string;
 }
 
 export default function BusquedaPage() {
@@ -267,14 +272,15 @@ export default function BusquedaPage() {
     return snippet;
   };
 
+  // Datos del breadcrumb
+  const breadcrumbItems: BreadcrumbItem[] = [
+    { label: 'Inicio', url: '/' },
+    { label: 'Búsqueda', url: '/busqueda' }
+  ];
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <Breadcrumb
-        items={[
-          { label: 'Inicio', url: '/' },
-          { label: 'Búsqueda', url: '/busqueda' }
-        ]}
-      />
+      <Breadcrumb items={breadcrumbItems} />
       
       <h1 className="text-3xl font-bold mb-8 text-gray-800">Resultados de búsqueda</h1>
       
