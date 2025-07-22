@@ -1,28 +1,40 @@
-"use client";
+'use client';
 
 import React from 'react';
 import FloatingWhatsAppButton from './FloatingWhatsAppButton';
 import FloatingContactButton from './FloatingContactButton';
-import AccessibilityPanel from './AccessibilityPanel';
+import GlobalFloatingPaymentButton from './GlobalFloatingPaymentButton';
 
-// Importamos el componente AutogeneradoresCard solo si existe y es necesario
-let AutogeneradoresCard;
+// Importaciones condicionales para componentes opcionales
+let AccessibilityPanel: React.ComponentType | null = null;
+let AutogeneradoresCard: React.ComponentType | null = null;
+
+try {
+  AccessibilityPanel = require('./AccessibilityPanel').default;
+} catch (error) {
+  console.log('AccessibilityPanel no encontrado, saltando...');
+}
+
 try {
   AutogeneradoresCard = require('./AutogeneradoresCard').default;
 } catch (error) {
-  // El componente no existe o hay algún error, lo manejamos silenciosamente
-  AutogeneradoresCard = null;
+  console.log('AutogeneradoresCard no encontrado, saltando...');
 }
 
-export default function ClientComponents() {
+export default function ClientComponents(): React.JSX.Element {
   return (
     <>
-      {/* Componentes flotantes de la interfaz */}
+      {/* Componentes principales que sabemos que existen */}
       <FloatingWhatsAppButton />
       <FloatingContactButton />
-      <AccessibilityPanel />
       
-      {/* Renderizamos condicionalmente AutogeneradoresCard si está disponible */}
+      {/* 🆕 BOTÓN GLOBAL DE PAGO DE FACTURAS */}
+      <GlobalFloatingPaymentButton />
+      
+      {/* Componentes opcionales */}
+      {AccessibilityPanel && <AccessibilityPanel />}
+      
+      {/* AutogeneradoresCard oculto si existe */}
       {AutogeneradoresCard && (
         <div className="autogeneradores-floating-container" style={{ display: 'none' }}>
           <AutogeneradoresCard />

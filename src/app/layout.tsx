@@ -2,8 +2,8 @@
 import './globals.css';
 import './responsive.css';
 import { Inter } from 'next/font/google';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
+import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
 import { ReactNode } from 'react';
 import FloatingWhatsAppButton from '../components/FloatingWhatsAppButton';
 import ClientWrapper from '../components/ClientWrapper';

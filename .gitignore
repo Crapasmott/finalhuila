@@ -1,20 +1,159 @@
-# Dependencias
+# ========== DEPENDENCIAS ==========
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
 
-# Archivos de entorno
+# ========== ARCHIVOS DE ENTORNO ==========
 .env
 .env.*
+!.env.example
+!.env.local.example
 
-# Build y export de Next.js
+# ========== NEXT.JS ==========
 .next/
 out/
 dist/
+build/
 
-# Archivos temporales
+# ========== ARCHIVOS TEMPORALES Y LOGS ==========
 *.log
+logs/
+pids/
+*.pid
+*.seed
+*.pid.lock
 
+# ========== SISTEMA OPERATIVO ==========
 # macOS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 
-# Vercel
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+
+# Linux
+*~
+
+# ========== DEPLOYMENT ==========
 .vercel/
+.netlify/
+
+# ========== EDITORES E IDEs ==========
+# VSCode
+.vscode/
+!.vscode/settings.json.example
+!.vscode/launch.json.example
+!.vscode/extensions.json.example
+
+# JetBrains (WebStorm, IntelliJ, etc.)
+.idea/
+*.swp
+*.swo
+*~
+
+# Sublime Text
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+*.sublime-workspace
+*.sublime-project
+
+# Vim
+*.swp
+*.swo
+
+# ========== CACHE Y COMPILACIÓN ==========
+# TypeScript
+*.tsbuildinfo
+.tscache/
+
+# ESLint
+.eslintcache
+
+# Prettier
+.prettierignore
+
+# Babel
+.babel-cache/
+
+# Zero-installs (Yarn 2+)
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# ========== TESTING ==========
+coverage/
+*.lcov
+.nyc_output/
+
+# Jest
+jest-coverage/
+
+# ========== ARCHIVOS DE PRODUCCIÓN ==========
+*.tgz
+*.tar.gz
+
+# ========== RUNTIME ==========
+.cache/
+.parcel-cache/
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# ========== ESPECÍFICO DEL PROYECTO ==========
+# Archivos sensibles de ElectroHuila (si los hay)
+config/database.json
+config/secrets.json
+
+# Backups temporales
+*.backup
+*.bak
+*.tmp
+
+# Archivos de desarrollo local
+dev-notes.md
+TODO.md
+
+# ========== OPCIONAL ==========
+# Si usas Docker
+Dockerfile.local
+docker-compose.override.yml
+
+# Si usas Storybook
+storybook-static/
+
+# Si usas Cypress
+cypress/videos/
+cypress/screenshots/
+
+# Si generas documentación
+docs/build/
+
+# Si usas análisis de bundle
+.bundle-analyzer/
+
+# ========== DATOS TEMPORALES ==========
+# LocalStorage exports (si los hay)
+localstorage-exports/
+
+# Reportes de performance
+lighthouse-reports/
+
+# Archivos de debug específicos
+debug.log
+error.log

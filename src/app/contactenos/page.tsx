@@ -9,6 +9,7 @@ interface FormData {
   nombre: string;
   email: string;
   telefono: string;
+  municipio: string; // ✅ NUEVO: Campo agregado
   asunto: string;
   mensaje: string;
   tipoConsulta: string;
@@ -18,6 +19,7 @@ interface FormErrors {
   nombre?: string;
   email?: string;
   telefono?: string;
+  municipio?: string; // ✅ NUEVO: Error agregado
   asunto?: string;
   mensaje?: string;
   tipoConsulta?: string;
@@ -33,12 +35,54 @@ interface ContactInfo {
   }>;
 }
 
+// ✅ NUEVO: Lista de municipios del Huila
+const MUNICIPIOS_HUILA = [
+  'Acevedo',
+  'Agrado',
+  'Aipe',
+  'Algeciras',
+  'Altamira',
+  'Baraya',
+  'Campoalegre',
+  'Colombia',
+  'Elías',
+  'Garzón',
+  'Gigante',
+  'Guadalupe',
+  'Hobo',
+  'Íquira',
+  'Isnos',
+  'La Argentina',
+  'La Plata',
+  'Nátaga',
+  'Neiva',
+  'Oporapa',
+  'Paicol',
+  'Palermo',
+  'Palestina',
+  'Pital',
+  'Pitalito',
+  'Rivera',
+  'Saladoblanco',
+  'San Agustín',
+  'Santa María',
+  'Suaza',
+  'Tarqui',
+  'Tesalia',
+  'Tello',
+  'Teruel',
+  'Timaná',
+  'Villavieja',
+  'Yaguará'
+];
+
 export default function ContactoPage() {
   // Estado para el formulario
   const [formData, setFormData] = useState<FormData>({
     nombre: '',
     email: '',
     telefono: '',
+    municipio: '', // ✅ NUEVO: Campo agregado
     asunto: '',
     mensaje: '',
     tipoConsulta: 'general'
@@ -91,6 +135,11 @@ export default function ContactoPage() {
       newErrors.telefono = 'El teléfono debe tener 10 dígitos';
     }
 
+    // ✅ NUEVO: Validación del municipio
+    if (!formData.municipio.trim()) {
+      newErrors.municipio = 'El municipio es requerido';
+    }
+
     if (!formData.asunto.trim()) {
       newErrors.asunto = 'El asunto es requerido';
     }
@@ -134,6 +183,7 @@ export default function ContactoPage() {
         nombre: '',
         email: '',
         telefono: '',
+        municipio: '', // ✅ NUEVO: Limpiar municipio
         asunto: '',
         mensaje: '',
         tipoConsulta: 'general'
@@ -155,14 +205,20 @@ export default function ContactoPage() {
         {
           icon: <MapPin className="w-5 h-5" />,
           label: 'Dirección',
-          value: 'Calle 7 No. 8-09 Neiva, Huila',
-          link: 'https://maps.google.com/?q=Calle+7+No.+8-09+Neiva+Huila'
+          value: ' Carrera 18 Calle 9 Neiva, Huila',
+          link: 'https://maps.app.goo.gl/aBDG6NpYXkNtvFfP7'
         },
         {
           icon: <Phone className="w-5 h-5" />,
           label: 'Teléfono',
           value: '(608) 8664600',
-          link: 'tel:+576086664600'
+          link: 'tel:+6086086664600'
+        },
+        {
+          icon: <Phone className="w-5 h-5" />,
+          label: 'Teléfono',
+          value: '(608) 8664646',
+          link: 'tel:+6088664646'
         },
         {
           icon: <Mail className="w-5 h-5" />,
@@ -183,20 +239,20 @@ export default function ContactoPage() {
         {
           icon: <MapPin className="w-5 h-5" />,
           label: 'Garzón',
-          value: 'Calle 11 No. 13-45',
-          link: 'https://maps.google.com/?q=Calle+11+No.+13-45+Garzon+Huila'
+          value: 'Cl. 8 #7-54',
+          link: 'https://maps.app.goo.gl/C7NLCfGaYpwWoq3G8'
         },
         {
           icon: <MapPin className="w-5 h-5" />,
           label: 'La Plata',
-          value: 'Carrera 6 No. 4-08',
-          link: 'https://maps.google.com/?q=Carrera+6+No.+4-08+La+Plata+Huila'
+          value: 'Cl. 10 #5a-2',
+          link: 'https://maps.app.goo.gl/eRJZrFPHnd1cpvZK7'
         },
         {
           icon: <MapPin className="w-5 h-5" />,
           label: 'Pitalito',
-          value: 'Calle 4 No. 5-19',
-          link: 'https://maps.google.com/?q=Calle+4+No.+5-19+Pitalito+Huila'
+          value: 'Cl. 19 Sur #3-05',
+          link: 'https://maps.app.goo.gl/jnym9bnRZwkKZSxw7'
         }
       ]
     },
@@ -205,15 +261,21 @@ export default function ContactoPage() {
       items: [
         {
           icon: <Phone className="w-5 h-5" />,
-          label: 'Emergencias 24/7',
-          value: '115',
-          link: 'tel:115'
+          label: 'Línea Gratuita ',
+          value: '018000952115',
+          link: 'tel:018000952115'
         },
         {
           icon: <Phone className="w-5 h-5" />,
           label: 'Servicio al Cliente',
-          value: '(608) 8664600 Ext. 1000',
+          value: '(608) 8664600 ',
           link: 'tel:+576086664600'
+        },
+        {
+          icon: <Phone className="w-5 h-5" />,
+          label: 'Servicio al Cliente',
+          value: '(608) (608) 8664646',
+          link: 'tel:+57(608) 8664646'
         },
         {
           icon: <Mail className="w-5 h-5" />,
@@ -229,9 +291,9 @@ export default function ContactoPage() {
   const tiposConsulta = [
     { value: 'general', label: 'Consulta General' },
     { value: 'facturacion', label: 'Facturación y Pagos' },
-    { value: 'tecnica', label: 'Soporte Técnico' },
+    { value: 'tecnica', label: 'Fallas en el Servicio' },
     { value: 'comercial', label: 'Información Comercial' },
-    { value: 'pqr', label: 'PQR - Petición, Queja o Reclamo' },
+    { value: 'comercial', label: 'AGPE (Autogeneradores)' },
     { value: 'nuevo_servicio', label: 'Nuevo Servicio' },
     { value: 'suspension', label: 'Suspensión del Servicio' },
     { value: 'otro', label: 'Otro' }
@@ -370,6 +432,32 @@ export default function ContactoPage() {
                     <p className="mt-1 text-sm text-red-600">{errors.telefono}</p>
                   )}
                 </div>
+              </div>
+
+              {/* ✅ NUEVO: Campo de Municipio */}
+              <div>
+                <label htmlFor="municipio" className="block text-sm font-medium text-gray-700 mb-2">
+                  Municipio del Huila *
+                </label>
+                <select
+                  id="municipio"
+                  name="municipio"
+                  value={formData.municipio}
+                  onChange={handleInputChange}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                    errors.municipio ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                >
+                  <option value="">Selecciona tu municipio</option>
+                  {MUNICIPIOS_HUILA.map(municipio => (
+                    <option key={municipio} value={municipio}>
+                      {municipio}
+                    </option>
+                  ))}
+                </select>
+                {errors.municipio && (
+                  <p className="mt-1 text-sm text-red-600">{errors.municipio}</p>
+                )}
               </div>
 
               {/* Asunto */}
@@ -527,7 +615,7 @@ export default function ContactoPage() {
           </div>
         </div>
 
-        {/* Mapa o información adicional */}
+        {/* ✅ MODIFICADO: Mapa de Google Maps integrado */}
         <div className="mt-12 bg-white rounded-lg shadow-lg p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
             Visítanos en nuestra oficina principal
@@ -540,7 +628,7 @@ export default function ContactoPage() {
               <div className="space-y-3 text-gray-600">
                 <div className="flex items-center space-x-3">
                   <MapPin className="w-5 h-5 text-blue-600" />
-                  <span>Calle 7 No. 8-09, Neiva, Huila, Colombia</span>
+                  <span>Oficina Saire: Carrera 18 Calle 9 Neiva</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <Phone className="w-5 h-5 text-blue-600" />
@@ -558,7 +646,7 @@ export default function ContactoPage() {
               
               <div className="mt-6">
                 <Link
-                  href="https://maps.google.com/?q=Calle+7+No.+8-09+Neiva+Huila"
+                  href="https://maps.app.goo.gl/aBDG6NpYXkNtvFfP7"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -569,10 +657,19 @@ export default function ContactoPage() {
               </div>
             </div>
             
-            <div className="bg-gray-100 rounded-lg h-64 flex items-center justify-center">
-              <p className="text-gray-500">
-                [Aquí iría integrado el mapa de Google Maps]
-              </p>
+            {/* ✅ REEMPLAZADO: Mapa de Google Maps en lugar del placeholder gris */}
+            <div className="rounded-lg overflow-hidden shadow-md">
+              <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3984.596576082679!2d-75.280842624324!3d2.931677854449525!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3b746e97b7cab5%3A0x111026bb54568f3b!2sElectroHuila%20-%20Edificio%20Saire!5e0!3m2!1ses-419!2sco!4v1753146189665!5m2!1ses-419!2sco"
+                width="100%" 
+                height="256" 
+                style={{ border: 0 }} 
+                allowFullScreen={true}
+                loading="lazy" 
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Ubicación de Electrohuila - Edificio Saire"
+                className="w-full h-64"
+              />
             </div>
           </div>
         </div>

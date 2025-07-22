@@ -14,9 +14,9 @@ import NewsNotification from '../components/NewsNotification';
 // *** NUEVO: Componente de YouTube automático ***
 import YouTubeGallery from '../components/YouTubeGallery';
 // *** NUEVO: Componente de Boletines y Comunicados ***
-import TituloNoticias from '@/components/TituloNoticias'
+import TituloNoticias from '../components/TituloNoticias'
 // *** NUEVO: Componente de Boletines y Comunicados ***
-import BoletinesComunicados from '@/components/BoletinesComunicados';
+import BoletinesComunicados from '../components/BoletinesComunicados';
 
 // Definición de interfaces para TypeScript (mantenidas para compatibilidad)
 interface VideoData {

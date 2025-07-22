@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Phone, Mail, MapPin, Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
 
-export default function Footer() {
+export default function Footer(): React.JSX.Element {
   // Año actual para el copyright
   const currentYear = new Date().getFullYear();
   
@@ -201,6 +201,19 @@ export default function Footer() {
                 textDecoration: 'none'
               }}>
                 <Facebook size={20} />
+              </a>
+              <a href="https://x.com/electrohuila" target="_blank" rel="noopener noreferrer" style={{
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                color: 'white',
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textDecoration: 'none'
+              }}>
+                <Twitter size={20} />
               </a>
               <a href="https://www.instagram.com/electrohuila/" target="_blank" rel="noopener noreferrer" style={{
                 backgroundColor: 'rgba(255,255,255,0.1)',
